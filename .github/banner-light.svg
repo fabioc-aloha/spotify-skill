@@ -1,0 +1,41 @@
+<svg width="800" height="200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient for light theme -->
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1DB954;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1ed760;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#f5f5f5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Light background with border -->
+  <rect width="800" height="200" fill="url(#grad2)" rx="15"/>
+  <rect width="798" height="198" x="1" y="1" fill="none" stroke="#e0e0e0" stroke-width="2" rx="14"/>
+  
+  <!-- Spotify-inspired circle -->
+  <circle cx="120" cy="100" r="50" fill="url(#grad1)"/>
+  
+  <!-- Music note icon -->
+  <path d="M 110 80 L 110 130 Q 110 135 115 135 Q 120 135 120 130 L 120 75 L 130 70 L 130 125 Q 130 130 135 130 Q 140 130 140 125 L 140 65" 
+        fill="white" stroke="white" stroke-width="2"/>
+  
+  <!-- Title text -->
+  <text x="190" y="95" font-family="'Segoe UI', -apple-system, system-ui, Arial, sans-serif" font-size="42" font-weight="bold" fill="#191414">
+    Spotify Skill
+  </text>
+  
+  <!-- Subtitle -->
+  <text x="190" y="125" font-family="'Segoe UI', -apple-system, system-ui, Arial, sans-serif" font-size="18" fill="#1DB954">
+    Complete Claude Desktop Skills Development Toolkit
+  </text>
+  
+  <!-- Decorative elements -->
+  <circle cx="750" cy="50" r="3" fill="#1DB954" opacity="0.6"/>
+  <circle cx="770" cy="70" r="2" fill="#1DB954" opacity="0.4"/>
+  <circle cx="730" cy="90" r="2.5" fill="#1DB954" opacity="0.5"/>
+  <circle cx="760" cy="150" r="3" fill="#1DB954" opacity="0.6"/>
+  <circle cx="740" cy="170" r="2" fill="#1DB954" opacity="0.4"/>
+</svg>
