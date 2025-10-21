@@ -1,9 +1,9 @@
 <div align="center">
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/fabioc-aloha/spotify-skill/main/.github/banner-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/fabioc-aloha/spotify-skill/main/.github/banner-light.svg">
-  <img alt="Spotify Skill Banner" src="https://raw.githubusercontent.com/fabioc-aloha/spotify-skill/main/.github/banner-dark.svg" width="800">
+  <source media="(prefers-color-scheme: dark)" srcset=".github/banner-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset=".github/banner-light.svg">
+  <img alt="Spotify Skill Banner" src=".github/banner-dark.svg" width="800">
 </picture>
 
 <br/><br/>
