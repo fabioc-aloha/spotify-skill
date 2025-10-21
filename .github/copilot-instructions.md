@@ -68,26 +68,31 @@ skill-name/
 
 ```
 Spotify-Skill/
-├── spotify-api.skill           # Packaged skill (binary ZIP)
+├── README.md                   # Main repository documentation
 ├── SPOTIFY_SKILL_README.md     # Complete project overview
+├── USER_GUIDE.md               # Complete usage guide
 ├── QUICK_START.md              # 5-minute setup guide
-├── DELIVERY_SUMMARY.md         # Project completion summary
-├── FILES_MANIFEST.txt          # Detailed file inventory
-├── agent_skills_spec.md        # Official Agent Skills Spec v1.0 (NEW!)
-├── INTEGRATION_SUMMARY.md      # Tool integration documentation (NEW!)
+├── agent_skills_spec.md        # Official Agent Skills Spec v1.0
+├── spotify-api.skill           # Packaged skill (git ignored)
 │
-├── tools/                      # Skill development utilities (NEW!)
+├── .github/                    # Repository assets
+│   ├── copilot-instructions.md # AI assistant instructions
+│   ├── banner-dark.svg         # Dark theme banner
+│   └── banner-light.svg        # Light theme banner
+│
+├── tools/                      # Skill development utilities
 │   ├── init_skill.py           # Create new skills from template
 │   ├── validate_skill.py       # Validate skill structure
 │   ├── package_skill.py        # Package skills for distribution
 │   └── README.md               # Tool documentation
 │
-├── examples/                   # Curated skill examples (NEW!)
+├── examples/                   # Curated skill examples
 │   ├── README.md               # Pattern comparison and selection guide
 │   └── EXAMPLES_REFERENCE.md   # Detailed analysis of 6 example patterns
 │
 ├── spotify-api/                # Skill source files
 │   ├── SKILL.md                # Main skill documentation (REQUIRED)
+│   ├── .env                    # Spotify credentials (git ignored)
 │   ├── scripts/
 │   │   ├── spotify_client.py  # Core API wrapper (40+ methods)
 │   │   └── playlist_creator.py # High-level playlist utilities
@@ -101,7 +106,7 @@ Spotify-Skill/
     ├── SKILL_CREATION_GUIDE.md # Complete skill creation guide
     ├── SKILL_CREATION_WORKBOOK.md # Interactive planning templates
     ├── ADVANCED_SKILL_EXAMPLES.md # Patterns and examples
-    └── [duplicated docs for reference]
+    └── SPOTIFY_CREDENTIALS_SETUP.md # Credential setup guide
 ```
 
 ---
@@ -486,17 +491,23 @@ Use `SKILL_CREATION_WORKBOOK.md` for step-by-step planning.
 
 ```
 Entry Points:
+├─ README.md ──→ "Repository landing page"
+├─ SPOTIFY_SKILL_README.md ──→ "Complete project overview"
+├─ USER_GUIDE.md ──→ "Complete usage guide"
+├─ QUICK_START.md ──→ "5-minute setup"
 ├─ Guide/00_START_HERE.md ──→ "New to skills? Start here"
-├─ Guide/INDEX.md ──→ "Need navigation? Go here"
-└─ SPOTIFY_SKILL_README.md ──→ "Want to use Spotify skill? Start here"
+└─ Guide/INDEX.md ──→ "Need navigation? Go here"
 
 Main Educational Content:
 ├─ Guide/SKILL_CREATION_GUIDE.md ──→ Complete textbook
 ├─ Guide/SKILL_CREATION_WORKBOOK.md ──→ Interactive planning
 └─ Guide/ADVANCED_SKILL_EXAMPLES.md ──→ Pattern library
 
+Example Skills:
+├─ examples/README.md ──→ Pattern comparison and selection
+└─ examples/EXAMPLES_REFERENCE.md ──→ Detailed analysis of 6 patterns
+
 Spotify Skill Documentation:
-├─ QUICK_START.md ──→ 5-minute setup
 ├─ spotify-api/SKILL.md ──→ Main skill doc (loaded by Claude)
 ├─ spotify-api/references/authentication_guide.md ──→ OAuth setup
 └─ spotify-api/references/api_reference.md ──→ API details
