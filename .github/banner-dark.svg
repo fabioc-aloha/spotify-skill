@@ -17,12 +17,21 @@
   <!-- Spotify-inspired circle -->
   <circle cx="120" cy="100" r="50" fill="url(#grad1)"/>
   
-  <!-- Music note icon -->
-  <path d="M 110 80 L 110 130 Q 110 135 115 135 Q 120 135 120 130 L 120 75 L 130 70 L 130 125 Q 130 130 135 130 Q 140 130 140 125 L 140 65" 
-        fill="white" stroke="white" stroke-width="2"/>
+  <!-- Spotify logo - three curved arcs -->
+  <g transform="translate(120, 100)">
+    <!-- Top arc - longest -->
+    <path d="M -20 -18 Q -5 -22, 10 -18 Q 18 -15, 22 -10" 
+          fill="none" stroke="white" stroke-width="4" stroke-linecap="round"/>
+    <!-- Middle arc - medium -->
+    <path d="M -18 -5 Q -5 -9, 8 -5 Q 15 -2, 20 2" 
+          fill="none" stroke="white" stroke-width="4" stroke-linecap="round"/>
+    <!-- Bottom arc - shortest -->
+    <path d="M -15 8 Q -5 5, 5 8 Q 12 10, 17 14" 
+          fill="none" stroke="white" stroke-width="4" stroke-linecap="round"/>
+  </g>
   
   <!-- Title text -->
-  <text x="190" y="95" font-family="'Segoe UI', -apple-system, system-ui, Arial, sans-serif" font-size="42" font-weight="bold" fill="white">
+  <text x="190" y="90" font-family="'Segoe UI', -apple-system, system-ui, Arial, sans-serif" font-size="46" font-weight="bold" fill="white">
     Spotify Skill
   </text>
   
