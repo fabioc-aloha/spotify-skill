@@ -25,8 +25,6 @@ Use this skill when you need to:
 
 **When to use this skill:** The user wants you to create a playlist, search for music, manage their Spotify account, **or generate custom cover art images**.
 
-**When NOT to use this skill:** The user is asking you to build a React app or export data files. For app development, refer to ADVANCED_USAGE.md separately.
-
 ## Core Capabilities
 
 1. **🎨 Cover Art Image Generation** - Generate custom images with SVG → PNG conversion (Claude cannot generate images natively!)
@@ -590,7 +588,7 @@ High-level utility for intelligent playlist creation from various sources (artis
 
 ## For Developers Building Apps (Advanced)
 
-**Note:** The features below are for developers building React/web applications, NOT for direct playlist creation tasks.
+**Note:** The features below are for developers building web applications, NOT for direct playlist creation tasks.
 
 If the user is asking you to **build an application** or **export data**, see:
 - `ADVANCED_USAGE.md` - Application development patterns
