@@ -37,6 +37,151 @@ Whether you want to **use** the Spotify skill or **create your own skills**, thi
 
 ---
 
+## 🏗️ Architecture
+
+```mermaid
+flowchart TB
+    subgraph "Claude Desktop"
+        CLAUDE[Claude AI Assistant]
+    end
+
+    subgraph "Spotify Skill Package"
+        SKILL[SKILL.md<br/>Main Documentation]
+
+        subgraph "Scripts (Python Tools)"
+            SC[spotify_client.py<br/>40+ API Methods]
+            PC[playlist_creator.py<br/>5 Creation Strategies]
+            CG[cover_art_generator.py<br/>Image Generation]
+        end
+
+        subgraph "References"
+            API_REF[api_reference.md<br/>API Documentation]
+            AUTH[authentication_guide.md<br/>OAuth 2.0 Setup]
+            LLM_GUIDE[COVER_ART_LLM_GUIDE.md<br/>Design Instructions]
+        end
+    end
+
+    subgraph "Development Tools"
+        INIT[init_skill.py<br/>Create New Skills]
+        VAL[validate_skill.py<br/>Structure Validation]
+        PKG[package_skill.py<br/>Distribution Packaging]
+    end
+
+    subgraph "Spotify Web API"
+        AUTH_API[OAuth 2.0<br/>Authentication]
+
+        subgraph "API Endpoints"
+            PLAYLIST_API[Playlist Management<br/>Create, Update, Delete]
+            SEARCH_API[Search & Discovery<br/>Tracks, Artists, Albums]
+            PLAYBACK_API[Playback Control<br/>Play, Pause, Skip]
+            USER_API[User Data<br/>Profile, Top Items, History]
+            IMAGE_API[Cover Upload<br/>ugc-image-upload]
+        end
+    end
+
+    subgraph "Image Generation Pipeline"
+        SVG[SVG Generation<br/>Text + Colors]
+        PNG[PNG Conversion<br/>cairosvg]
+        OPT[Image Optimization<br/>Pillow/JPEG]
+    end
+
+    %% Main Flow
+    CLAUDE -->|Loads Skill| SKILL
+    SKILL -->|References| SC
+    SKILL -->|References| PC
+    SKILL -->|References| CG
+    SKILL -->|Links To| API_REF
+    SKILL -->|Links To| AUTH
+    SKILL -->|Links To| LLM_GUIDE
+
+    %% Authentication Flow
+    SC -->|OAuth 2.0| AUTH_API
+    CG -->|OAuth 2.0| AUTH_API
+    AUTH -->|Guides| AUTH_API
+
+    %% API Operations
+    SC -->|GET/POST/PUT/DELETE| PLAYLIST_API
+    SC -->|Search Queries| SEARCH_API
+    SC -->|Control Commands| PLAYBACK_API
+    SC -->|Data Retrieval| USER_API
+
+    PC -->|Uses| SC
+    PC -->|Creates Playlists| PLAYLIST_API
+    PC -->|Searches Content| SEARCH_API
+
+    %% Cover Art Flow
+    CG -->|Analyzes Content| SC
+    CG -->|Reads Instructions| LLM_GUIDE
+    CG -->|Generates| SVG
+    SVG -->|Converts| PNG
+    PNG -->|Optimizes| OPT
+    OPT -->|Uploads| IMAGE_API
+
+    %% Development Tools
+    INIT -.->|Creates| SKILL
+    VAL -.->|Validates| SKILL
+    PKG -.->|Packages| SKILL
+
+    %% Styling
+    classDef claude fill:#FF6B35,stroke:#333,stroke-width:3px,color:#fff
+    classDef skill fill:#4A90E2,stroke:#333,stroke-width:2px,color:#fff
+    classDef script fill:#50C878,stroke:#333,stroke-width:2px,color:#fff
+    classDef reference fill:#9B59B6,stroke:#333,stroke-width:2px,color:#fff
+    classDef tool fill:#F39C12,stroke:#333,stroke-width:2px,color:#333
+    classDef api fill:#1DB954,stroke:#333,stroke-width:2px,color:#fff
+    classDef image fill:#E91E63,stroke:#333,stroke-width:2px,color:#fff
+
+    class CLAUDE claude
+    class SKILL skill
+    class SC,PC,CG script
+    class API_REF,AUTH,LLM_GUIDE reference
+    class INIT,VAL,PKG tool
+    class AUTH_API,PLAYLIST_API,SEARCH_API,PLAYBACK_API,USER_API,IMAGE_API api
+    class SVG,PNG,OPT image
+```
+
+### Key Components
+
+#### 🎵 Core Scripts
+- **`spotify_client.py`** (838 lines, 40+ methods)
+  - OAuth 2.0 authentication with auto-refresh
+  - Playlist management (CRUD operations)
+  - Search (tracks, artists, albums, playlists)
+  - Playback control (play, pause, skip, volume, shuffle)
+  - User data (profile, top items, saved tracks)
+  - Recommendations engine
+  - Audio features analysis
+  - Network access detection
+
+- **`playlist_creator.py`** (332 lines, 5 strategies)
+  - Create by artist/band name
+  - Create by theme/mood keywords
+  - Create by lyrical content
+  - Create from song lists
+  - Create from AI recommendations
+  - Deduplication & batch processing
+
+- **`cover_art_generator.py`** (565 lines)
+  - Content-driven design analysis
+  - SVG generation with text wrapping
+  - PNG conversion (cairosvg)
+  - Image optimization (Pillow)
+  - Direct upload to Spotify
+  - 20+ theme presets (legacy)
+  - WCAG 2.1 AA compliance
+
+#### 📚 Reference Documents
+- **`api_reference.md`** - Complete Spotify API documentation
+- **`authentication_guide.md`** - OAuth 2.0 setup instructions
+- **`COVER_ART_LLM_GUIDE.md`** - Content analysis & color psychology guide
+
+#### 🛠️ Development Tools
+- **`init_skill.py`** - Bootstrap new skill projects
+- **`validate_skill.py`** - Verify skill structure & content
+- **`package_skill.py`** - Create distributable .skill packages
+
+---
+
 ## ✨ Features
 
 ### 🎵 Spotify API Skill
