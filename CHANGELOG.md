@@ -5,6 +5,34 @@ All notable changes to the Spotify Skills project will be documented in this fil
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.1] - 2025-10-22
+
+### 🔧 Documentation Improvements
+
+#### Restructured COVER_ART_LLM_GUIDE.md
+- **Reduced file size** from 1,129 to 653 lines (55% reduction)
+- **Fixed confusing numbering** - Changed nested numbering (1.6, 5.11) to clean sequential (1→2→3→4→5)
+- **Eliminated duplicates** - Removed all duplicate sections (vague requests, typography, colors)
+- **Examples first** - Moved complete workflow examples to top for better LLM pattern matching
+- **Single primary method** - Unified content-driven approach with template fallback only when needed
+- **Consistent terminology** - Standardized parameter names (gradient_start, gradient_end, text_color)
+- **Added decision tree** - Clear flowchart showing when to use which approach
+- **Enhanced troubleshooting** - Added common issues and solutions section
+
+#### API Documentation Fixes
+- Fixed `get_artist_top_tracks()` signature in USER_GUIDE.md (removed invalid limit parameter)
+- Updated spotify_client.py to match official Spotify API (limit parameter removed)
+- Added pagination examples for listing all playlists (not just first 50)
+
+#### Other Documentation Updates
+- Updated CHANGELOG.md and FUTURE_ROADMAP.md to reference "design patterns" instead of "animations"
+- Fixed emoji rendering issues in SKILL.md
+
+### 📦 Package
+- Repackaged skill with improved documentation (49KB)
+
+---
+
 ## [0.9.0] - 2025-10-22
 
 ### 🎉 Initial Public Release
@@ -28,6 +56,7 @@ First public release of the Spotify Skills development toolkit!
   - By lyrical content
   - From specific song lists
   - From AI recommendations
+```
 - **📡 Complete Spotify API Coverage** - 40+ methods
   - OAuth 2.0 with automatic token refresh
   - Playlist management (CRUD operations)

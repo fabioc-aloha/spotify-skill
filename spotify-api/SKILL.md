@@ -5,7 +5,7 @@ description: Create and manage Spotify playlists, search music, and control play
 
 # Spotify API Skill
 
-**Version**: 0.9.0 | **Release Date**: October 22, 2025
+**Version**: 0.9.1 | **Release Date**: October 22, 2025
 
 ## Overview
 
