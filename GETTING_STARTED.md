@@ -29,6 +29,8 @@ pip install -r requirements.txt
 This installs:
 - `requests` - For HTTP API calls
 - `python-dotenv` - For loading credentials
+- `cairosvg` - For SVG → PNG conversion (cover art generation)
+- `pillow` - For image optimization (cover art generation)
 
 ### 3. Get Spotify Credentials
 
@@ -109,6 +111,44 @@ playlist = creator.create_from_artist(
     limit=25
 )
 ```
+
+### Generate Cover Art 🎨 (NEW!)
+
+> **⚡ UNIQUE**: Claude cannot generate images natively, but this skill can!
+
+```python
+from cover_art_generator import CoverArtGenerator
+
+# Initialize generator
+art_gen = CoverArtGenerator(
+    client_id=os.getenv("SPOTIFY_CLIENT_ID"),
+    client_secret=os.getenv("SPOTIFY_CLIENT_SECRET"),
+    access_token=client.access_token
+)
+
+# Generate and upload cover art
+art_gen.create_and_upload_cover(
+    playlist_id=playlist['id'],
+    title="Best of Radiohead",
+    subtitle="Essential Tracks",
+    artist="radiohead"  # Uses Radiohead's signature colors
+)
+
+# Or test locally first
+art_gen.generate_cover_art(
+    title="Summer Vibes",
+    theme="summer",
+    output_path="test_cover.png"
+)
+```
+
+**Features:**
+- Automatic text wrapping for long titles
+- 20+ mood themes, 15+ genre colors, 10 artist palettes
+- Large fonts (60-96px) optimized for thumbnails
+- WCAG 2.1 accessibility compliant
+
+See [USER_GUIDE.md - Cover Art Generation](USER_GUIDE.md#cover-art-generation) for complete documentation.
 
 ## Common Issues
 

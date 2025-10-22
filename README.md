@@ -45,13 +45,16 @@ Whether you want to **use** the Spotify skill or **create your own skills**, thi
 > This skill can **generate images** - something Claude cannot do natively! It creates custom SVG-based cover art and converts them to PNG images, bypassing Claude's built-in limitation.
 
 - **🎨 Custom Cover Art Generation**: Auto-generate thumbnail-readable playlist cover images with:
-  - SVG → PNG image generation (Claude cannot generate images natively!)
-  - 20+ mood themes (summer, chill, energetic, romantic, etc.)
-  - 15+ genre color schemes (rock, jazz, electronic, blues, etc.)
-  - 10 artist-specific moods (Beatles, Queen, Pink Floyd, etc.)
-  - Large typography (60-96px) optimized for thumbnail readability
-  - 80% text width for maximum visibility
-  - Smart element spacing to prevent overlap
+  - **SVG → PNG image generation** (Claude cannot generate images natively!)
+  - **Automatic text wrapping** for long playlist titles
+  - **20+ mood themes** (summer, chill, energetic, romantic, nostalgic, etc.)
+  - **15+ genre color schemes** (rock, jazz, electronic, blues, indie, etc.)
+  - **10 artist-specific moods** (Beatles, Queen, Pink Floyd, Nirvana, etc.)
+  - **Large typography** (60-96px fonts) optimized for thumbnail readability
+  - **80% text width** for maximum visibility at all sizes
+  - **Smart element spacing** to prevent overlap
+  - **WCAG 2.1 compliant** - Accessibility-first design with high contrast
+  - **Comprehensive LLM guide** - Detailed instructions for quality generation
 - **Intelligent Playlist Creation**: Create playlists by artist, theme, lyrics, or song list
 - **Playlist Management**: Create, update, delete, add/remove tracks
 - **Search & Discovery**: Find tracks, artists, albums, playlists

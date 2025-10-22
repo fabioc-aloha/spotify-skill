@@ -9,12 +9,13 @@
 5. [Basic Usage](#basic-usage)
 6. [Playlist Management](#playlist-management)
 7. [Intelligent Playlist Creation](#intelligent-playlist-creation)
-8. [Search & Discovery](#search--discovery)
-9. [Playback Control](#playback-control)
-10. [User Library Management](#user-library-management)
-11. [Advanced Features](#advanced-features)
-12. [Troubleshooting](#troubleshooting)
-13. [API Reference](#api-reference)
+8. [Cover Art Generation](#cover-art-generation) 🆕
+9. [Search & Discovery](#search--discovery)
+10. [Playback Control](#playback-control)
+11. [User Library Management](#user-library-management)
+12. [Advanced Features](#advanced-features)
+13. [Troubleshooting](#troubleshooting)
+14. [API Reference](#api-reference)
 
 ---
 
@@ -24,6 +25,7 @@ The Spotify API Skill enables you to interact with Spotify programmatically thro
 
 - ✅ **Complete Spotify API access** - 40+ methods covering all major operations
 - ✅ **OAuth 2.0 authentication** - Secure, automatic token refresh
+- ✅ **🎨 Cover Art Generation** - Create custom playlist cover images (UNIQUE: Claude cannot generate images natively!)
 - ✅ **Intelligent playlist creation** - 5 different creation strategies
 - ✅ **Search & discovery** - Find tracks, artists, albums, playlists
 - ✅ **Playback control** - Control what's playing on your devices
@@ -490,6 +492,258 @@ print(f"👤 Owner: {stats['owner']}")
 print(f"👥 Followers: {stats['followers']}")
 print(f"🔓 Public: {stats['public']}")
 ```
+
+---
+
+## Cover Art Generation
+
+> **⚡ UNIQUE CAPABILITY**: This skill can **generate images** - something Claude cannot do natively! It creates custom SVG-based cover art and converts them to PNG images.
+
+### Overview
+
+The `CoverArtGenerator` class enables you to create professional, thumbnail-optimized cover art for your Spotify playlists with:
+
+- **Automatic text wrapping** for long playlist titles
+- **20+ mood themes** (summer, chill, energetic, romantic, nostalgic, etc.)
+- **15+ genre color schemes** (rock, jazz, electronic, blues, indie, etc.)
+- **10 artist-specific moods** (Beatles, Queen, Pink Floyd, Nirvana, etc.)
+- **Large typography** (60-96px fonts) optimized for thumbnail readability
+- **WCAG 2.1 compliant** - High contrast ratios for accessibility
+- **SVG → PNG conversion** with automatic optimization
+
+### Prerequisites
+
+**Required Spotify Scope**: `ugc-image-upload`
+
+To upload cover art to Spotify, you must have this scope enabled:
+
+```bash
+# Re-run OAuth with the ugc-image-upload scope
+python get_refresh_token.py
+# This will include the ugc-image-upload scope automatically
+```
+
+**Required Python Libraries**:
+
+```bash
+pip install cairosvg pillow
+```
+
+### Setup
+
+```python
+from cover_art_generator import CoverArtGenerator
+from spotify_client import SpotifyClient
+import os
+
+# Initialize Spotify client
+client = SpotifyClient(
+    client_id=os.getenv("SPOTIFY_CLIENT_ID"),
+    client_secret=os.getenv("SPOTIFY_CLIENT_SECRET"),
+    redirect_uri=os.getenv("SPOTIFY_REDIRECT_URI"),
+    refresh_token=os.getenv("SPOTIFY_REFRESH_TOKEN")
+)
+
+# Initialize cover art generator
+art_gen = CoverArtGenerator(
+    client_id=os.getenv("SPOTIFY_CLIENT_ID"),
+    client_secret=os.getenv("SPOTIFY_CLIENT_SECRET"),
+    access_token=client.access_token
+)
+```
+
+### Theme-Based Cover Art
+
+Create cover art using one of 20+ preset mood themes:
+
+```python
+# Create and upload in one step
+art_gen.create_and_upload_cover(
+    playlist_id="your_playlist_id",
+    title="Summer Vibes",
+    subtitle="2024",
+    theme="summer"  # Auto-selects warm, vibrant colors
+)
+
+# Available themes:
+# summer, chill, energetic, dark, romantic, melancholic, euphoric,
+# peaceful, intense, dreamy, nostalgic, party, motivational,
+# mysterious, playful, elegant, rebellious, serene, vibrant, cozy
+```
+
+### Genre-Based Cover Art
+
+Use genre-specific color schemes:
+
+```python
+art_gen.create_and_upload_cover(
+    playlist_id="your_playlist_id",
+    title="Rock Classics",
+    subtitle="Best of the 70s",
+    genre="rock"  # Red/black rock aesthetic
+)
+
+# Available genres:
+# rock, pop, jazz, classical, electronic, hip-hop, country,
+# indie, metal, r&b, blues, folk, reggae, punk, soul
+```
+
+### Artist-Specific Cover Art
+
+Preset colors for popular artists:
+
+```python
+art_gen.create_and_upload_cover(
+    playlist_id="your_playlist_id",
+    title="Best of Queen",
+    subtitle="The Greatest Hits",
+    artist="queen"  # Regal gold/burgundy palette
+)
+
+# Available artists:
+# beatles, pinkfloyd, radiohead, queen, nirvana, davidbowie,
+# ledzeppelin, acdc, therollingstones, fleetwoodmac
+```
+
+### Custom Color Schemes
+
+Create your own color combinations:
+
+```python
+art_gen.generate_cover_art(
+    title="My Custom Playlist",
+    subtitle="Personal Mix",
+    background_color="#1a1a2e",  # Dark blue
+    text_color="#eee",           # Light gray
+    accent_color="#16213e",      # Accent blue
+    output_path="my_cover.png"
+)
+
+# Then upload separately
+art_gen.upload_cover_art("playlist_id", "my_cover.png")
+```
+
+### Complete Workflow: Playlist + Cover Art
+
+```python
+from spotify_client import SpotifyClient
+from cover_art_generator import CoverArtGenerator
+from playlist_creator import PlaylistCreator
+
+# Initialize
+client = SpotifyClient(...)
+creator = PlaylistCreator(client)
+art_gen = CoverArtGenerator(...)
+
+# 1. Create playlist
+result = creator.create_from_artist(
+    artist_name="Queen",
+    playlist_name="Queen Collection",
+    limit=50
+)
+playlist_id = result['playlist']['id']
+
+# 2. Generate and upload cover art
+art_gen.create_and_upload_cover(
+    playlist_id=playlist_id,
+    title="Queen Collection",
+    subtitle="50 Essential Tracks",
+    artist="queen"
+)
+
+print(f"✅ Created playlist with custom cover art!")
+```
+
+### Testing Cover Art Locally
+
+Generate cover art without uploading:
+
+```python
+# Generate to file
+art_gen.generate_cover_art(
+    title="Test Playlist",
+    subtitle="2024",
+    theme="chill",
+    output_path="test_cover.png"
+)
+print("✅ Generated test_cover.png")
+
+# Test multiple designs
+test_designs = [
+    ("Summer Mix", "summer"),
+    ("Rock Anthems", "rock"),
+    ("Chill Vibes", "chill")
+]
+
+for title, theme in test_designs:
+    art_gen.generate_cover_art(
+        title=title,
+        theme=theme,
+        output_path=f"test_{theme}.png"
+    )
+```
+
+### Text Wrapping for Long Titles
+
+Long playlist titles automatically wrap at word boundaries:
+
+```python
+# This long title will automatically wrap across multiple lines
+art_gen.create_and_upload_cover(
+    playlist_id="your_playlist_id",
+    title="My Ultimate Workout Power Hour Playlist",  # Wraps intelligently
+    subtitle="High Energy Mix",
+    theme="energetic"
+)
+```
+
+### Best Practices for LLMs
+
+When requesting cover art generation through Claude or other LLMs, the skill includes comprehensive guidance. See `spotify-api/references/COVER_ART_LLM_GUIDE.md` for:
+
+- Step-by-step execution process
+- Handling vague requests (asking clarifying questions)
+- Edge case handling (long titles, special characters, non-English)
+- Animation implementation (optional)
+- Accessibility compliance (WCAG 2.1)
+- Error recovery strategies
+- Quality assurance protocols
+
+### Troubleshooting Cover Art
+
+**401 Error: Missing Scope**
+
+```bash
+# Error: 401 Unauthorized when uploading
+# Solution: Re-run OAuth with ugc-image-upload scope
+python get_refresh_token.py
+# Update .env with new refresh token
+```
+
+**Import Error: cairosvg/PIL**
+
+```bash
+# Error: No module named 'cairosvg' or 'PIL'
+# Solution: Install dependencies
+pip install cairosvg pillow
+```
+
+**Long Titles Cut Off**
+
+```python
+# The text wrapping is automatic, but you can also:
+# 1. Use shorter titles
+# 2. Abbreviate common words ("and" → "&", "The" → "THE")
+# 3. Split into title and subtitle
+
+art_gen.create_and_upload_cover(
+    title="Best Rock Music",  # Main title (shorter)
+    subtitle="From the 80s",  # Additional context
+    theme="rock"
+)
+```
+
+For detailed troubleshooting, see `spotify-api/COVER_ART_TROUBLESHOOTING.md`.
 
 ---
 
