@@ -59,6 +59,11 @@ tmp/
 *.zip
 *.skill
 
+# Test files (generated during development)
+spotify-api/test_*.py
+spotify-api/test_*.png
+spotify-api/*.png
+
 # Node modules (if any)
 node_modules/
 
