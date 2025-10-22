@@ -753,6 +753,253 @@ This project serves as:
 
 ---
 
+## Recent Development History & Lessons Learned
+
+### Version 0.9.0 Development Journey
+
+This section documents key learnings from the v0.9.0 development cycle, including feature development, packaging considerations, and release preparation.
+
+#### Cover Art Generation Feature (Major Addition)
+
+**Development Context:**
+- Added comprehensive cover art generation capability to the Spotify skill
+- Integrated as a tool within the main skill (not a separate skill)
+- Required new dependencies: `cairosvg` and `Pillow`
+
+**Key Technical Learnings:**
+
+1. **Text Wrapping for Long Titles**
+   - **Challenge**: Long playlist titles (e.g., "My Ultimate Workout Power Hour") were being cut off or squished
+   - **Solution**: Implemented automatic text wrapping at word boundaries with max 20 characters per line
+   - **Implementation**: 
+     ```python
+     def wrap_text(text, max_chars=20):
+         words = text.split()
+         lines = []
+         current_line = []
+         current_length = 0
+         
+         for word in words:
+             if current_length + len(word) + len(current_line) > max_chars:
+                 if current_line:
+                     lines.append(' '.join(current_line))
+                     current_line = [word]
+                     current_length = len(word)
+             else:
+                 current_line.append(word)
+                 current_length += len(word)
+         
+         if current_line:
+             lines.append(' '.join(current_line))
+         return lines
+     ```
+   - **Typography Specs**: Font sizes 60-96px, line height 110%, text width 80% of canvas
+
+2. **Missing Spotify Scope Discovery**
+   - **Issue**: 401 Unauthorized errors when uploading cover art
+   - **Root Cause**: Missing `ugc-image-upload` scope in OAuth token
+   - **Fix Required**: Users must re-run `get_refresh_token.py` to get new token with proper scopes
+   - **Documentation Updated**: `authentication_guide.md`, `COVER_ART_LLM_GUIDE.md`, and `COVER_ART_TROUBLESHOOTING.md`
+   - **Lesson**: Always verify all required API scopes before implementing features
+
+3. **Comprehensive LLM Execution Guide**
+   - **Purpose**: Enable Claude to generate cover art despite not having native image generation capabilities
+   - **Created**: `COVER_ART_LLM_GUIDE.md` (835 lines)
+   - **Key Sections**:
+     - Step-by-step execution process
+     - Handling vague user requests
+     - 20+ themes, 15+ genres, 10+ artist moods
+     - Edge case handling (long titles, special characters)
+     - Accessibility considerations (WCAG 2.1 AA compliance)
+     - Quality assurance checklists
+   - **Lesson**: Detailed execution guides are critical for complex multi-step AI operations
+
+4. **Design Specifications Evolution**
+   - **Initial**: Basic text rendering
+   - **Enhanced**: Larger typography (60-96px), 80% width text, proper spacing
+   - **Final**: Multi-line text wrapping, dynamic font scaling, theme variety
+   - **Lesson**: Iterative design improvements based on real-world testing
+
+#### Repository Health & Best Practices
+
+**Packaging & Distribution Considerations:**
+
+1. **Credentials in Package Files**
+   - **Critical Issue**: `.env` file with user credentials accidentally included in `spotify-api.skill` package
+   - **Security Risk**: Personal OAuth tokens and client secrets would be distributed publicly
+   - **Solution**: 
+     - `.env` files already in `.gitignore` (lines 2-4)
+     - `.skill` packages already in `.gitignore` (line 64)
+     - Must repackage skill WITHOUT credentials before GitHub release
+   - **Lesson**: **NEVER include credentials in packaged distributions**
+   - **Best Practice**: Document credential setup steps in `QUICK_START.md` and `authentication_guide.md`
+
+2. **Repository Visibility & Health**
+   - **Initial State**: Repository was private, missing key community files
+   - **Actions Taken**:
+     - Made repository public via `gh repo edit`
+     - Added Apache 2.0 LICENSE
+     - Created CONTRIBUTING.md with guidelines
+     - Added issue templates (bug_report.yml, feature_request.yml)
+     - Enabled GitHub Discussions
+     - Added 12 relevant topics/tags
+   - **Result**: Professional, discoverable, community-ready repository
+   - **Lesson**: Repository health matters for open source adoption
+
+3. **Professional Branding**
+   - **Challenge**: Project needed a clear, professional name
+   - **Analysis**: Considered "Spotify Claude Skill", "Claude Spotify Integration", etc.
+   - **Decision**: "Spotify Skills for Claude"
+     - Clear it's for Claude Desktop
+     - "Skills" plural reflects both the Spotify skill AND the toolkit
+     - Professional and searchable
+     - Works well in all contexts
+   - **Updated**: SVG banners, all documentation, repository description
+   - **Lesson**: Project naming impacts discoverability and perception
+
+#### Release Preparation Best Practices
+
+**v0.9.0 Release Checklist:**
+
+1. **Version Documentation**
+   - ✅ Added `version: 0.9.0` to `SKILL.md` YAML frontmatter
+   - ✅ Created `CHANGELOG.md` following Keep a Changelog format
+   - ✅ Created comprehensive `RELEASE_NOTES.md` (1,500+ lines)
+   - ✅ Updated all badges in README with v0.9.0
+   - ✅ Added release links to documentation
+
+2. **Documentation Consistency**
+   - ✅ Unified project name across all files
+   - ✅ Fixed broken emojis (� → 🎨, 🎵)
+   - ✅ Updated feature lists with cover art capabilities
+   - ✅ Cross-referenced new documentation files
+
+3. **Package Validation**
+   - ✅ Ran `python tools/validate_skill.py ./spotify-api`
+   - ✅ All validation checks passed
+   - ⚠️ **Must repackage WITHOUT .env before release**
+   - ✅ Package size: ~50KB (without credentials)
+
+4. **Git Hygiene**
+   - ✅ All changes committed with descriptive messages
+   - ✅ Clean working directory
+   - ✅ All commits pushed to GitHub
+   - ✅ Ready for tag creation: `git tag -a v0.9.0 -m "Release v0.9.0"`
+
+#### Key Development Patterns Discovered
+
+**1. Feature Integration Strategy**
+- When adding major features, integrate as tools within existing skill rather than creating separate skills
+- Maintain single cohesive package for related functionality
+- Example: Cover art generation integrated into spotify-api skill, not separate spotify-cover-art skill
+
+**2. LLM-Friendly Documentation**
+- Create execution guides specifically for AI systems
+- Include step-by-step processes, not just reference information
+- Provide concrete examples for vague user requests
+- Document edge cases and error recovery strategies
+
+**3. Iterative Design with Real Testing**
+- Test features with actual use cases (e.g., long playlist titles)
+- Iterate based on real-world failures
+- Document lessons learned in troubleshooting guides
+
+**4. Security-First Packaging**
+- Always review package contents before distribution
+- Never include credentials, tokens, or personal data
+- Document credential setup process clearly
+- Use `.gitignore` and validation checks
+
+**5. Professional Open Source Standards**
+- LICENSE file (Apache 2.0 for compatibility)
+- CONTRIBUTING.md with clear guidelines
+- Issue templates for consistent reporting
+- CHANGELOG.md for version history
+- Comprehensive README with badges
+- GitHub Discussions for community
+
+#### Common Pitfalls to Avoid
+
+1. **Including Credentials in Packages**
+   - ❌ Don't package `.env` files with OAuth tokens
+   - ❌ Don't commit credentials to git
+   - ✅ Document setup process instead
+   - ✅ Use environment variables
+
+2. **Incomplete OAuth Scopes**
+   - ❌ Don't assume basic scopes are sufficient
+   - ✅ Test all features to identify required scopes
+   - ✅ Document all scopes in authentication guide
+   - ✅ Provide clear error messages for missing scopes
+
+3. **Text Rendering Without Wrapping**
+   - ❌ Don't assume titles will fit on one line
+   - ✅ Implement automatic text wrapping
+   - ✅ Test with real-world long titles
+   - ✅ Use word boundary breaks, not character breaks
+
+4. **Publishing Without Health Checks**
+   - ❌ Don't release without LICENSE
+   - ❌ Don't skip validation checks
+   - ✅ Run repository health assessment (`gh repo view`)
+   - ✅ Add all necessary community files
+
+5. **Inconsistent Documentation**
+   - ❌ Don't update one file and forget others
+   - ✅ Search for all occurrences when changing names
+   - ✅ Update banners, badges, and metadata
+   - ✅ Cross-reference new features across docs
+
+#### Files Created/Modified in v0.9.0
+
+**New Core Files:**
+- `spotify-api/scripts/cover_art_generator.py` (565 lines) - SVG generation with text wrapping
+- `spotify-api/references/COVER_ART_LLM_GUIDE.md` (835 lines) - AI execution guide
+- `spotify-api/COVER_ART_TROUBLESHOOTING.md` - 401 error solutions
+- `spotify-api/requirements.txt` - Added cairosvg, pillow dependencies
+
+**New Repository Health Files:**
+- `LICENSE` - Apache 2.0 full text
+- `CONTRIBUTING.md` - Contribution guidelines
+- `CHANGELOG.md` - Version history
+- `RELEASE_NOTES.md` - Comprehensive v0.9.0 documentation
+- `.github/ISSUE_TEMPLATE/bug_report.yml` - Bug reporting template
+- `.github/ISSUE_TEMPLATE/feature_request.yml` - Feature request template
+- `.github/ISSUE_TEMPLATE/config.yml` - Issue template configuration
+
+**Updated Files:**
+- `README.md` - Rebranded, v0.9.0 badges, cover art features
+- `USER_GUIDE.md` - Cover art generation section
+- `GETTING_STARTED.md` - Updated branding and examples
+- `spotify-api/SKILL.md` - Version 0.9.0, fixed emojis, cover art workflows
+- `spotify-api/references/authentication_guide.md` - Added ugc-image-upload scope
+- `.github/banner-dark.svg` - Updated project name
+- `.github/banner-light.svg` - Updated project name
+- `get_refresh_token.py` - Added ugc-image-upload scope
+
+**Package Status:**
+- `spotify-api.skill` - 51.5KB with credentials (DO NOT DISTRIBUTE)
+- Need to repackage without `.env` before GitHub release
+- Target size: ~50KB without credentials
+
+#### Technical Debt & Future Considerations
+
+**For v1.0.0:**
+1. Automated credential validation tool
+2. Cover art template library expansion
+3. Batch playlist operations
+4. Performance optimizations for large libraries
+5. Additional example skills in different domains
+6. Video tutorial for skill creation
+
+**Maintenance Notes:**
+- Keep Spotify API scope list updated as API evolves
+- Monitor Python dependency versions (cairosvg, Pillow)
+- Update LLM guide as Claude's capabilities evolve
+- Track community feedback via GitHub Discussions
+
+---
+
 ## Summary for AI Assistants
 
 **This project is a teaching tool first, Spotify integration second.**
