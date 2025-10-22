@@ -1,6 +1,6 @@
 ---
 name: spotify-api
-description: Create and manage Spotify playlists, search music, and control playback using the Spotify Web API. UNIQUE FEATURE - Generate custom cover art images (Claude cannot generate images natively, but this skill can create SVG-based cover art for playlists). Use this to directly create playlists by artist/theme/lyrics, add tracks, search for music, and manage the user's Spotify account.
+description: Create and manage Spotify playlists, search music, and control playback using the Spotify Web API. UNIQUE FEATURE - Generate custom cover art images (Claude cannot generate images natively, but this skill can create SVG-based cover art for playlists). CRITICAL - When generating cover art, ALWAYS read references/COVER_ART_LLM_GUIDE.md FIRST for complete execution instructions. Use this to directly create playlists by artist/theme/lyrics, add tracks, search for music, and manage the user's Spotify account.
 ---
 
 # Spotify API Skill
@@ -227,23 +227,33 @@ client.add_tracks_to_playlist(playlist['id'], track_ids)
 >
 > **This is real image generation**, not just visualization descriptions!
 
-> **📋 RECOMMENDED WORKFLOW - Content-Driven Design:**
+> **� CRITICAL INSTRUCTION FOR COVER ART GENERATION:**
+>
+> **⚠️ ALWAYS read [references/COVER_ART_LLM_GUIDE.md](references/COVER_ART_LLM_GUIDE.md) FIRST before generating any cover art!**
+>
+> This guide is REQUIRED reading and contains the complete execution instructions for content-driven design. DO NOT generate cover art without consulting this guide first.
+
+> **�📋 RECOMMENDED WORKFLOW - Content-Driven Design:**
 >
 > **The best approach is to analyze the playlist's actual content to determine colors:**
 >
-> 1. **Analyze Playlist Content** - Get the playlist's tracks and artists
-> 2. **Extract Characteristics** - Determine genre, energy level (1-10), and mood from content
-> 3. **Apply Color Psychology** - Use color theory to choose appropriate colors
-> 4. **Generate with Custom Colors** - Pass determined colors to the generator
+> 1. **READ THE GUIDE FIRST** - Open and read [references/COVER_ART_LLM_GUIDE.md](references/COVER_ART_LLM_GUIDE.md)
+> 2. **Analyze Playlist Content** - Get the playlist's tracks and artists using the Spotify API
+> 3. **Extract Characteristics** - Determine genre, energy level (1-10), and mood from the actual content
+> 4. **Apply Color Psychology** - Use the color mapping tables in the guide to choose appropriate colors
+> 5. **Generate with Custom Colors** - Pass determined colors to the generator
 >
-> **📚 REQUIRED READING:** See [references/COVER_ART_LLM_GUIDE.md](references/COVER_ART_LLM_GUIDE.md) for the complete content-driven workflow. This self-contained guide provides:
+> **📚 THE LLM GUIDE CONTAINS:** [references/COVER_ART_LLM_GUIDE.md](references/COVER_ART_LLM_GUIDE.md)
+> - Complete step-by-step execution process
 > - How to analyze playlist content using the Spotify API
-> - Genre-to-color and mood-to-color mapping principles
+> - Genre-to-color mapping tables (rock → red, jazz → purple, etc.)
+> - Mood-to-color mapping tables (energetic → orange, chill → blue, etc.)
 > - Energy level analysis (1-10 scale)
-> - Color psychology reference
-> - Typography rules and accessibility requirements
-> - Complete execution examples
-> - Edge case handling
+> - Color psychology principles
+> - Typography rules and accessibility requirements (WCAG 2.1 AA)
+> - Complete workflow examples with code
+> - Edge case handling (long titles, special characters)
+> - Quality assurance checklist
 >
 > **Example: Content-Driven Approach**
 > ```python
@@ -300,6 +310,8 @@ client.add_tracks_to_playlist(playlist['id'], track_ids)
 
 ### Content-Driven Generation (Recommended)
 
+> **🚨 BEFORE GENERATING: Read [references/COVER_ART_LLM_GUIDE.md](references/COVER_ART_LLM_GUIDE.md) for complete instructions!**
+
 **Analyze playlist content to determine contextually appropriate colors:**
 
 ```python
@@ -308,26 +320,44 @@ from cover_art_generator import CoverArtGenerator
 # Initialize generator (uses same credentials as SpotifyClient)
 art_gen = CoverArtGenerator(client_id, client_secret, access_token)
 
-# 1. Get playlist content
+# STEP 1: Read the LLM guide for execution instructions
+# Open references/COVER_ART_LLM_GUIDE.md and follow the workflow
+
+# STEP 2: Get playlist content using SpotifyClient
 playlist = client.get_playlist("7i9dQZF1DXaXB8fQg7xif")
 tracks = playlist['tracks']['items']
+artists = [track['track']['artists'][0]['name'] for track in tracks]
 
-# 2. Analyze content (determine from actual tracks/artists)
+# STEP 3: Analyze content characteristics (use guide's mapping tables)
+# - Determine genre from artists/tracks
+# - Assess energy level (1-10 scale)
+# - Identify mood/vibe
+# - Apply color psychology from guide
+
+# STEP 4: Generate with analyzed colors
 # Example: High-energy rock playlist
-# Determined colors using color psychology from guide
+# Colors determined using guide's genre/mood tables:
+# Rock + High Energy (9/10) + Intense Mood = Red/Dark gradient
 
-# 3. Generate with analyzed colors
 art_gen.create_and_upload_cover(
     playlist_id=playlist['id'],
     title="Beast Mode",           # Large, readable text
     subtitle="Gym",                # Optional subtitle
-    gradient_start="#E63946",      # Intense red (high energy)
+    gradient_start="#E63946",      # Intense red (high energy rock)
     gradient_end="#1D1D1D",        # Dark background (rock/metal)
-    text_color="#FFFFFF"           # Maximum contrast
+    text_color="#FFFFFF"           # Maximum contrast (WCAG AA)
 )
 ```
 
-**See [references/COVER_ART_LLM_GUIDE.md](references/COVER_ART_LLM_GUIDE.md) for the complete workflow.**
+**📚 Complete Workflow:** [references/COVER_ART_LLM_GUIDE.md](references/COVER_ART_LLM_GUIDE.md) contains:
+- Step-by-step execution process
+- Genre-to-color mapping tables
+- Mood-to-color mapping tables  
+- Energy level assessment (1-10)
+- Color psychology principles
+- Typography & accessibility rules
+- Edge case handling
+- Quality checklist
 
 ### Quick Presets (Legacy)
 
