@@ -14,8 +14,8 @@ description: Create and manage Spotify playlists, search music, and control play
 **🎨 This skill can GENERATE IMAGES** - something Claude cannot do natively! It creates custom SVG-based cover art for Spotify playlists with large, readable typography optimized for thumbnail viewing. Each cover art is dynamically generated with theme-appropriate colors, gradients, and text layouts.
 
 Use this skill when you need to:
-- � **Generate cover art images** - Create custom playlist covers (Claude's built-in image generation limitation is bypassed!)
-- �🎵 **Create playlists** from artist names, themes, or specific songs
+- 🎨 **Generate cover art images** - Create custom playlist covers (Claude's built-in image generation limitation is bypassed!)
+- 🎵 **Create playlists** from artist names, themes, or specific songs
 - 🔍 **Search** for tracks, artists, albums
 - ➕ **Add/remove tracks** from playlists
 - ▶️ **Control playback** (play, pause, skip)
@@ -224,6 +224,35 @@ client.add_tracks_to_playlist(playlist['id'], track_ids)
 > - SVG → PNG conversion with auto-optimization for Spotify's requirements
 >
 > **This is real image generation**, not just visualization descriptions!
+
+> **📋 BEST PRACTICES FOR COVER ART GENERATION:**
+>
+> When a user requests cover art for a playlist:
+>
+> 1. **For Vague Requests** - If the playlist name is generic ("My Playlist", "Good Music", "Vibes"), ASK clarifying questions:
+>    - What genres are in this playlist?
+>    - What's the mood or context? (workout, relaxation, party, study)
+>    - Any specific era or style? (80s, modern, vintage)
+>
+> 2. **For Long Titles** (>25 characters) - Text wrapping is automatic, but consider:
+>    - Abbreviating common words ("and" → "&")
+>    - Using smaller fonts proportionally
+>    - Breaking into multiple lines at natural word boundaries
+>
+> 3. **Always Verify** - After generation, confirm the design meets these requirements:
+>    - Text readable at thumbnail size (64x64px minimum)
+>    - High contrast (4.5:1 ratio minimum)
+>    - Genre-appropriate styling
+>    - Professional appearance
+>
+> **📚 Complete LLM Guide:** For comprehensive instructions on creating high-quality cover art, see [references/COVER_ART_LLM_GUIDE.md](references/COVER_ART_LLM_GUIDE.md). This guide includes:
+> - Step-by-step execution process
+> - Template selection logic
+> - Typography rules and positioning
+> - Animation implementation (optional)
+> - Accessibility compliance (WCAG 2.1)
+> - Error recovery strategies
+> - Sample execution flows
 
 ### ⚠️ Required Scope for Upload
 
