@@ -1,7 +1,6 @@
 ---
 name: spotify-api
 description: Create and manage Spotify playlists, search music, and control playback using the Spotify Web API. UNIQUE FEATURE - Generate custom cover art images (Claude cannot generate images natively, but this skill can create SVG-based cover art for playlists). Use this to directly create playlists by artist/theme/lyrics, add tracks, search for music, and manage the user's Spotify account.
-version: 0.9.0
 ---
 
 # Spotify API Skill
