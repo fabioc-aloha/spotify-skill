@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This project is a **flagship example of Claude Desktop Skills** - specifically demonstrating how to create production-ready skills that extend Claude's capabilities. The Spotify API Skill serves as a comprehensive reference implementation for building API integration skills.
+This project is an **example of Claude Desktop Skills** - specifically demonstrating how to create production-ready skills that extend Claude's capabilities. The Spotify API Skill serves as a comprehensive reference implementation for building API integration skills.
 
 ### What This Project Is
 
@@ -14,6 +14,7 @@ This project is a **flagship example of Claude Desktop Skills** - specifically d
 ### Project Type
 
 This is a **Complete Skill Development Toolkit** that includes:
+
 1. A complete working skill (Spotify API integration)
 2. **Automated development tools** (init, validate, package) - NEW!
 3. **Official specifications** (Agent Skills Spec v1.0) - NEW!
@@ -29,12 +30,14 @@ This is a **Complete Skill Development Toolkit** that includes:
 ### Definition
 
 **Skills** are modular, self-contained packages that extend Claude's capabilities by providing:
+
 - Specialized workflows for specific domains
 - Tool integrations (APIs, file formats, services)
 - Domain expertise and procedural knowledge
 - Bundled resources (scripts, references, assets)
 
 **Official Documentation**: For up-to-date information on creating custom skills, see:
+
 - [Official Claude Skills Documentation](https://support.claude.com/en/articles/12512198-how-to-create-custom-skills)
 - [Official Skills Examples Repository](https://github.com/anthropics/skills)
 
@@ -118,12 +121,14 @@ The `Guide/` folder contains the **complete educational curriculum** for skill c
 ### 1. Navigation Documents
 
 **`00_START_HERE.md`** - Primary entry point
+
 - Explains what's in the package
 - Provides learning paths based on goals
 - Recommends reading order
 - Estimated time commitments
 
 **`INDEX.md`** - Comprehensive navigation
+
 - Quick reference table for all documents
 - Goal-based navigation ("I want to...")
 - Learning paths (Beginner → Intermediate → Advanced)
@@ -136,11 +141,13 @@ The `Guide/` folder contains the **complete educational curriculum** for skill c
 Complete education on skill creation including:
 
 **Section 1: What Are Skills?**
+
 - Definition and purpose
 - Types of skills (API, document processing, code generation, etc.)
 - What skills provide vs. what Claude already knows
 
 **Section 2: Core Principles** (CRITICAL)
+
 1. **Concise is Key** - Challenge every sentence, share context window
 2. **Set Appropriate Degrees of Freedom**:
    - High freedom: Text-based guidance (blog posts, creative work)
@@ -150,6 +157,7 @@ Complete education on skill creation including:
 4. **Single Source of Truth**: No duplication
 
 **Section 3: Skill Architecture**
+
 - Directory structure requirements
 - SKILL.md with YAML frontmatter (required)
 - Scripts folder (optional, for reusable code)
@@ -157,6 +165,7 @@ Complete education on skill creation including:
 - Assets folder (optional, for templates/images)
 
 **Section 4: 6-Step Creation Process**
+
 1. Define scope and purpose
 2. Identify required resources
 3. Create SKILL.md structure
@@ -173,11 +182,13 @@ Complete education on skill creation including:
 Fill-in-the-blank templates for planning YOUR skill:
 
 **Phase 1: Discovery**
+
 - Define the problem and solution
 - Identify use cases (triggers, goals, requirements)
 - Document constraints (rate limits, auth, environment)
 
 **Phase 2: Planning**
+
 - Resource inventory (scripts, docs, assets)
 - Feature matrix (scope, complexity, priority)
 - Documentation structure outline
@@ -192,32 +203,34 @@ Fill-in-the-blank templates for planning YOUR skill:
 Five complete skill patterns with code:
 
 1. **API Wrapper Skills** (like Spotify)
+
    - Client class pattern
    - Token management
    - Error handling and retries
    - Rate limiting awareness
-
 2. **Document Processing Skills**
+
    - Template-based generation
    - Asset management
    - Format conversion
-
 3. **Multi-Domain Skills**
+
    - Organizing complex capabilities
    - Cross-referencing sections
    - Navigation strategies
-
 4. **Code Generation Skills**
+
    - Boilerplate and scaffolding
    - Parameter substitution
    - Framework-specific patterns
-
 5. **Learning/Reference Skills**
+
    - Structured educational content
    - Progressive curriculum design
    - Interactive elements
 
 Each example includes:
+
 - Complete directory structure
 - SKILL.md template
 - Script patterns
@@ -231,6 +244,7 @@ Each example includes:
 ### What It Does
 
 A production-ready skill that enables Claude to:
+
 1. **Create intelligent playlists** (5 methods):
    - By artist/band name
    - By theme/mood keywords
@@ -245,6 +259,7 @@ A production-ready skill that enables Claude to:
 ### Technical Implementation
 
 **`spotify_client.py`** (570 lines, 20 KB)
+
 - 40+ methods covering Spotify Web API
 - OAuth 2.0 authentication with auto-refresh
 - Comprehensive error handling
@@ -252,18 +267,21 @@ A production-ready skill that enables Claude to:
 - Token lifecycle management
 
 **`playlist_creator.py`** (332 lines, 12 KB)
+
 - High-level intelligent playlist creation
 - Deduplication and batch processing
 - Five creation strategies
 - Analytics and statistics
 
 **`SKILL.md`** (240 lines, 7 KB)
+
 - YAML frontmatter with name and description
 - Quick start examples
 - Four complete workflows
 - References to detailed guides
 
 **References/** (31 KB total)
+
 - `authentication_guide.md` - Complete OAuth setup (10 KB)
 - `api_reference.md` - Endpoints and error handling (9 KB)
 
@@ -290,6 +308,7 @@ A production-ready skill that enables Claude to:
 #### Writing SKILL.md
 
 ✅ **DO:**
+
 - Start with clear YAML frontmatter (name, description)
 - Provide immediate quick start code
 - Show 3-5 common workflows with examples
@@ -298,6 +317,7 @@ A production-ready skill that enables Claude to:
 - Use concise code examples over verbose explanations
 
 ❌ **DON'T:**
+
 - Explain what Claude already knows
 - Duplicate information across files
 - Write long prose when code examples suffice
@@ -307,12 +327,14 @@ A production-ready skill that enables Claude to:
 #### Scripts Strategy
 
 **Include scripts when:**
+
 - Code is written repeatedly (boilerplate elimination)
 - Operations are fragile or must be consistent
 - Performance matters (avoid re-generation)
 - Complex multi-step procedures
 
 **Keep as instructions when:**
+
 - Multiple valid approaches exist
 - Customization is expected
 - Code is simple/obvious
@@ -360,21 +382,22 @@ The project includes automated utilities from the [Anthropic Skills repository](
 ### Available Tools
 
 1. **`tools/init_skill.py`** - Skill Initializer
+
    - Creates new skill directories with proper structure
    - Generates SKILL.md with YAML frontmatter template
    - Creates example scripts/, references/, assets/ directories
    - Provides TODO markers and guidance comments
    - Usage: `python tools/init_skill.py <skill-name> --path <output-path>`
-
 2. **`tools/validate_skill.py`** - Skill Validator
+
    - Validates SKILL.md format and content
    - Checks YAML frontmatter (name, description required)
    - Verifies naming conventions (hyphen-case)
    - Ensures skill name matches directory name
    - Detects incomplete TODO placeholders
    - Usage: `python tools/validate_skill.py <skill-directory>`
-
 3. **`tools/package_skill.py`** - Skill Packager
+
    - Creates distributable .zip packages
    - Automatically validates before packaging
    - Excludes system files and cache directories
@@ -412,17 +435,20 @@ python tools/package_skill.py ./my-new-skill ./dist
 ### Using the Development Tools
 
 **Create New Skills:**
+
 ```bash
 python tools/init_skill.py my-api-skill --path ./
 # Edit generated files, then validate and package
 ```
 
 **Validate Existing Skills:**
+
 ```bash
 python tools/validate_skill.py ./spotify-api
 ```
 
 **Package for Distribution:**
+
 ```bash
 python tools/package_skill.py ./spotify-api ./dist
 ```
@@ -450,16 +476,19 @@ Use `SKILL_CREATION_WORKBOOK.md` for step-by-step planning.
 ### For Helping Users Learn
 
 **Beginner Path** (2-3 hours):
+
 1. Read `SKILL_CREATION_GUIDE.md` sections 1-3
 2. Review `SPOTIFY_SKILL_README.md`
 3. Skim `ADVANCED_SKILL_EXAMPLES.md` (Example 1)
 
 **Intermediate Path** (4-6 hours):
+
 1. Complete full `SKILL_CREATION_GUIDE.md`
 2. Study `ADVANCED_SKILL_EXAMPLES.md` patterns
 3. Work through `SKILL_CREATION_WORKBOOK.md`
 
 **Advanced Path** (2-3 hours):
+
 1. Deep dive into specific patterns
 2. Study error handling strategies
 3. Implement complex multi-domain skills
@@ -609,18 +638,22 @@ user-read-playback-state   # Read playback state
 ### Common Issues
 
 **"No module named 'spotify_client'"**
+
 - Ensure you're running from correct directory
 - Add scripts folder to Python path
 
 **"Invalid client_id/client_secret"**
+
 - Verify credentials from Spotify dashboard
 - Check environment variables are set
 
 **"Token expired"**
+
 - Call `refresh_access_token()` with refresh token
 - Implement automatic refresh in long-running processes
 
 **"Rate limit exceeded"**
+
 - Implement exponential backoff
 - Reduce request frequency
 - Use batch operations (up to 100 items)
@@ -643,6 +676,7 @@ user-read-playback-state   # Read playback state
 ### Official Documentation
 
 For the most current and official guidance on creating Claude Desktop Skills, always refer to:
+
 - **Official Guide**: https://support.claude.com/en/articles/12512198-how-to-create-custom-skills
 - **Official Examples Repository**: https://github.com/anthropics/skills
 
@@ -651,6 +685,7 @@ This project's Guide folder provides in-depth educational content that complemen
 ### Project History
 
 This project serves as:
+
 1. **Reference implementation** of skill creation best practices
 2. **Educational resource** for developers learning skill creation
 3. **Production example** showing real-world complexity
@@ -659,18 +694,21 @@ This project serves as:
 ### Design Decisions
 
 **Why Spotify?**
+
 - Popular, well-documented API
 - Complex enough to demonstrate real patterns
 - Simple enough to remain understandable
 - Multiple interaction styles (search, CRUD, playback)
 
 **Why This Structure?**
+
 - Separates learning (Guide/) from implementation (spotify-api/)
 - Demonstrates progressive disclosure
 - Shows single source of truth
 - Balances completeness with conciseness
 
 **Why Include Full Guides?**
+
 - Makes project self-contained
 - Provides context for design decisions
 - Enables learning without external resources
@@ -681,6 +719,7 @@ This project serves as:
 ## When Assisting Users
 
 ### If They Want to Learn Skill Creation:
+
 1. Direct them to the [official Claude documentation](https://support.claude.com/en/articles/12512198-how-to-create-custom-skills) for current specifications
 2. Point them to the [official skills examples repository](https://github.com/anthropics/skills) for more examples
 3. Direct them to `examples/` for curated example patterns
@@ -690,12 +729,14 @@ This project serves as:
 7. Use Spotify skill as concrete API integration example
 
 ### If They Want to Use the Spotify Skill:
+
 1. Direct them to `QUICK_START.md`
 2. Help with OAuth setup from `authentication_guide.md`
 3. Show examples from `SKILL.md`
 4. Reference API details from `api_reference.md`
 
 ### If They Want to Create Similar Skills:
+
 1. Help them choose a pattern from `examples/README.md`
 2. Study detailed analysis in `examples/EXAMPLES_REFERENCE.md`
 3. Use Spotify as API integration template
@@ -704,6 +745,7 @@ This project serves as:
 6. Reference core principles from `SKILL_CREATION_GUIDE.md`
 
 ### If They Want to Modify This Project:
+
 1. Understand the educational purpose
 2. Maintain the skill creation patterns
 3. Update both implementation and documentation
@@ -718,6 +760,7 @@ This project serves as:
 The Spotify API Skill is the **flagship example** demonstrating how to create professional Claude Desktop Skills. The `Guide/` folder contains a complete curriculum teaching skill creation principles, patterns, and best practices.
 
 When working with this project:
+
 - **Respect the educational purpose** - changes should maintain instructional value
 - **Follow the documented patterns** - they're intentional teaching examples
 - **Reference the guides** - they contain the "why" behind decisions

@@ -2,11 +2,35 @@
 
 ## Table of Contents
 
-1. [Setting Up Your Spotify App](#setting-up-your-spotify-app)
-2. [OAuth 2.0 Flow](#oauth-20-flow)
-3. [Credential Management](#credential-management)
-4. [Token Management](#token-management)
-5. [Scopes Explained](#scopes-explained)
+1. [Prerequisites](#prerequisites)
+2. [Setting Up Your Spotify App](#setting-up-your-spotify-app)
+3. [OAuth 2.0 Flow](#oauth-20-flow)
+4. [Credential Management](#credential-management)
+5. [Token Management](#token-management)
+6. [Scopes Explained](#scopes-explained)
+
+## Prerequisites
+
+### Network Access (Claude Desktop Users)
+
+⚠️ **IMPORTANT**: If using this skill in Claude Desktop, you must enable network access first:
+
+**Required Settings:**
+1. Open Claude Desktop → **Settings** → **Developer**
+2. Enable **"Allow network egress"** (toggle to ON/blue)
+3. Set **"Domain allowlist"** to either:
+   - **"All domains"** (easiest - allows all internet access), OR
+   - **"Specified domains"** and add `api.spotify.com` (more secure - Spotify only)
+
+**Why?**
+- The skill makes HTTP requests to `api.spotify.com`
+- Without network egress, all API calls will be blocked
+- This security feature must be explicitly enabled
+
+**Verification:**
+- Toggle should be blue/ON
+- For "All domains": Message shows "Claude can access all domains on the internet"
+- For "Specified domains": Verify `api.spotify.com` is in the domain list
 
 ## Setting Up Your Spotify App
 
@@ -267,6 +291,7 @@ Scopes determine what data and actions are allowed for your app.
 | `playlist-read-collaborative` | Read collaborative playlists |
 | `playlist-modify-public` | Create/modify public playlists |
 | `playlist-modify-private` | Create/modify private playlists |
+| `ugc-image-upload` | **Upload custom playlist cover images** ⚠️ **Required for cover art generation!** |
 
 ### User Scopes
 
@@ -300,12 +325,21 @@ Scopes determine what data and actions are allowed for your app.
 
 ### Recommended Scope Combinations
 
-**For Playlist Management:**
+**For Playlist Management (without cover art):**
 ```
 playlist-modify-public
 playlist-modify-private
 user-library-read
 ```
+
+**For Playlist Management WITH Cover Art Generation:**
+```
+playlist-modify-public
+playlist-modify-private
+user-library-read
+ugc-image-upload
+```
+⚠️ **Important**: The `ugc-image-upload` scope is **required** to upload custom cover art images to playlists!
 
 **For Full User Experience:**
 ```
@@ -319,6 +353,7 @@ user-top-read
 user-read-currently-playing
 user-modify-playback-state
 user-read-playback-state
+ugc-image-upload
 ```
 
 ### Requesting Specific Scopes

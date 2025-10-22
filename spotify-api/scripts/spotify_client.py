@@ -12,6 +12,48 @@ import base64
 import requests
 from typing import Dict, List, Optional, Any
 from urllib.parse import urlencode
+from pathlib import Path
+import socket
+
+# Try to load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    # Look for .env file in the parent directory (spotify-api folder)
+    env_path = Path(__file__).parent.parent / '.env'
+    if env_path.exists():
+        load_dotenv(dotenv_path=env_path)
+except ImportError:
+    # dotenv not available, will use system environment variables
+    pass
+
+
+class NetworkAccessError(Exception):
+    """Raised when network access to Spotify API is blocked."""
+    pass
+
+
+def check_network_access():
+    """
+    Check if network access to Spotify API is available.
+    
+    Raises:
+        NetworkAccessError: If connection to api.spotify.com is blocked
+    """
+    try:
+        # Try to resolve DNS for api.spotify.com
+        socket.gethostbyname('api.spotify.com')
+    except socket.gaierror as e:
+        raise NetworkAccessError(
+            "\n❌ NETWORK ACCESS BLOCKED\n\n"
+            "The Spotify API skill cannot access api.spotify.com.\n\n"
+            "🔧 FIX: Enable network egress in Claude Desktop:\n"
+            "   1. Open Claude Desktop → Settings → Developer\n"
+            "   2. Toggle 'Allow network egress' to ON (blue)\n"
+            "   3. Set 'Domain allowlist' to either:\n"
+            "      • 'All domains' (easiest), OR\n"
+            "      • 'Specified domains' and add 'api.spotify.com'\n\n"
+            "📖 See GETTING_STARTED.md for detailed instructions.\n"
+        ) from e
 
 
 class SpotifyClient:
@@ -176,14 +218,20 @@ class SpotifyClient:
         url = f"{self.BASE_URL}/{endpoint}"
         headers = self._get_headers()
         
-        response = requests.request(
-            method=method,
-            url=url,
-            headers=headers,
-            json=data,
-            params=params,
-            **kwargs
-        )
+        try:
+            response = requests.request(
+                method=method,
+                url=url,
+                headers=headers,
+                json=data,
+                params=params,
+                **kwargs
+            )
+        except requests.exceptions.ConnectionError as e:
+            # Check if it's a network access issue
+            check_network_access()
+            # If check passes, it's some other connection error
+            raise
         
         if response.status_code == 204:
             return {}
@@ -567,3 +615,223 @@ class SpotifyClient:
             params={"limit": limit, "offset": offset}
         )
         return data.get("items", [])
+
+
+# Helper function to create client from environment variables
+def create_client_from_env() -> SpotifyClient:
+    """
+    Create SpotifyClient from environment variables.
+    
+    Loads credentials from .env file (if available) or system environment.
+    Required environment variables:
+    - SPOTIFY_CLIENT_ID
+    - SPOTIFY_CLIENT_SECRET
+    
+    Optional environment variables:
+    - SPOTIFY_REDIRECT_URI (default: http://localhost:8888/callback)
+    - SPOTIFY_ACCESS_TOKEN
+    - SPOTIFY_REFRESH_TOKEN
+    
+    Returns:
+        Configured SpotifyClient instance
+        
+    Raises:
+        ValueError: If required credentials are missing
+    """
+    client_id = os.getenv('SPOTIFY_CLIENT_ID')
+    client_secret = os.getenv('SPOTIFY_CLIENT_SECRET')
+    redirect_uri = os.getenv('SPOTIFY_REDIRECT_URI', 'http://localhost:8888/callback')
+    access_token = os.getenv('SPOTIFY_ACCESS_TOKEN')
+    refresh_token = os.getenv('SPOTIFY_REFRESH_TOKEN')
+    
+    if not client_id or not client_secret:
+        raise ValueError(
+            "Missing required Spotify credentials. "
+            "Please set SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET environment variables."
+        )
+    
+    return SpotifyClient(
+        client_id=client_id,
+        client_secret=client_secret,
+        redirect_uri=redirect_uri,
+        access_token=access_token,
+        refresh_token=refresh_token
+    )
+
+
+def validate_credentials() -> Dict[str, bool]:
+    """
+    Validate that all required Spotify credentials are available.
+    
+    Returns:
+        Dictionary with validation results for each credential
+    """
+    return {
+        'client_id': bool(os.getenv('SPOTIFY_CLIENT_ID')),
+        'client_secret': bool(os.getenv('SPOTIFY_CLIENT_SECRET')),
+        'refresh_token': bool(os.getenv('SPOTIFY_REFRESH_TOKEN')),
+        'redirect_uri': bool(os.getenv('SPOTIFY_REDIRECT_URI')),
+        'all_valid': all([
+            os.getenv('SPOTIFY_CLIENT_ID'),
+            os.getenv('SPOTIFY_CLIENT_SECRET'),
+            os.getenv('SPOTIFY_REFRESH_TOKEN')
+        ])
+    }
+
+
+def get_validation_errors() -> List[str]:
+    """
+    Get list of missing credential errors.
+    
+    Returns:
+        List of error messages for missing credentials
+    """
+    errors = []
+    
+    if not os.getenv('SPOTIFY_CLIENT_ID'):
+        errors.append("❌ SPOTIFY_CLIENT_ID is not set")
+    
+    if not os.getenv('SPOTIFY_CLIENT_SECRET'):
+        errors.append("❌ SPOTIFY_CLIENT_SECRET is not set")
+    
+    if not os.getenv('SPOTIFY_REFRESH_TOKEN'):
+        errors.append("❌ SPOTIFY_REFRESH_TOKEN is not set (run get_refresh_token.py)")
+    
+    if errors:
+        errors.append("\n💡 TIP: Copy spotify-api/.env.example to spotify-api/.env and add your credentials")
+    
+    return errors
+
+
+class SpotifyAPIWrapper:
+    """
+    High-level wrapper for Spotify API with error handling and fallback support.
+    
+    Use this for applications that need graceful degradation when API is unavailable.
+    """
+    
+    def __init__(self, client: SpotifyClient = None, use_fallback: bool = True):
+        """
+        Initialize wrapper.
+        
+        Args:
+            client: SpotifyClient instance (auto-created if None)
+            use_fallback: Return mock data on errors if True
+        """
+        self.use_fallback = use_fallback
+        self.client = client
+        self._initialized = False
+        self._init_error = None
+        
+        # Try to initialize client
+        if not self.client:
+            try:
+                self.client = create_client_from_env()
+                if self.client.refresh_token:
+                    self.client.refresh_access_token()
+                self._initialized = True
+            except Exception as e:
+                self._init_error = str(e)
+                if not use_fallback:
+                    raise
+    
+    def _handle_error(self, error: Exception, fallback_data: Any = None) -> Any:
+        """Handle API errors with optional fallback."""
+        if self.use_fallback and fallback_data is not None:
+            return fallback_data
+        raise error
+    
+    def get_user_playlists(self, limit: int = 20) -> List[Dict]:
+        """
+        Get user's playlists with error handling.
+        
+        Returns:
+            List of playlist dictionaries, or empty list on error (if use_fallback=True)
+        """
+        if not self._initialized:
+            return self._handle_error(
+                Exception(self._init_error or "Client not initialized"),
+                fallback_data=[]
+            )
+        
+        try:
+            return self.client.get_user_playlists(limit=limit)
+        except Exception as e:
+            return self._handle_error(e, fallback_data=[])
+    
+    def search_tracks(self, query: str, limit: int = 10) -> List[Dict]:
+        """
+        Search for tracks with error handling.
+        
+        Returns:
+            List of track dictionaries, or empty list on error (if use_fallback=True)
+        """
+        if not self._initialized:
+            return self._handle_error(
+                Exception(self._init_error or "Client not initialized"),
+                fallback_data=[]
+            )
+        
+        try:
+            results = self.client.search(query, types=["track"], limit=limit)
+            return results.get("tracks", {}).get("items", [])
+        except Exception as e:
+            return self._handle_error(e, fallback_data=[])
+    
+    def get_user_profile(self) -> Dict:
+        """
+        Get user profile with error handling.
+        
+        Returns:
+            User profile dictionary, or mock data on error (if use_fallback=True)
+        """
+        if not self._initialized:
+            return self._handle_error(
+                Exception(self._init_error or "Client not initialized"),
+                fallback_data={
+                    'display_name': 'Unknown User',
+                    'id': 'unknown',
+                    'email': 'unknown@example.com'
+                }
+            )
+        
+        try:
+            return self.client.get_current_user()
+        except Exception as e:
+            return self._handle_error(e, fallback_data={
+                'display_name': 'Unknown User',
+                'id': 'unknown',
+                'email': 'unknown@example.com'
+            })
+    
+    def create_playlist(self, name: str, description: str = "", public: bool = True) -> Optional[Dict]:
+        """
+        Create playlist with error handling.
+        
+        Returns:
+            Playlist dictionary, or None on error (if use_fallback=True)
+        """
+        if not self._initialized:
+            return self._handle_error(
+                Exception(self._init_error or "Client not initialized"),
+                fallback_data=None
+            )
+        
+        try:
+            user = self.client.get_current_user()
+            return self.client.create_playlist(
+                user_id=user['id'],
+                name=name,
+                description=description,
+                public=public
+            )
+        except Exception as e:
+            return self._handle_error(e, fallback_data=None)
+    
+    def is_available(self) -> bool:
+        """Check if API is available and initialized."""
+        return self._initialized
+    
+    def get_error(self) -> Optional[str]:
+        """Get initialization error if any."""
+        return self._init_error

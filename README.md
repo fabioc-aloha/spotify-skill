@@ -39,10 +39,39 @@ Whether you want to **use** the Spotify skill or **create your own skills**, thi
 
 ### 🎵 Spotify API Skill
 
-- **Authentication**: OAuth 2.0 authorization code flow with automatic token refresh
-- **Playlists**: Create, manage, and modify playlists with intelligent algorithms
-- **Search**: Find tracks, artists, albums, and playlists
+**Primary Use:** Create and manage Spotify playlists, search music, control playback
+
+**⚡ UNIQUE CAPABILITY: Image Generation**
+> This skill can **generate images** - something Claude cannot do natively! It creates custom SVG-based cover art and converts them to PNG images, bypassing Claude's built-in limitation.
+
+- **🎨 Custom Cover Art Generation**: Auto-generate thumbnail-readable playlist cover images with:
+  - SVG → PNG image generation (Claude cannot generate images natively!)
+  - 20+ mood themes (summer, chill, energetic, romantic, etc.)
+  - 15+ genre color schemes (rock, jazz, electronic, blues, etc.)
+  - 10 artist-specific moods (Beatles, Queen, Pink Floyd, etc.)
+  - Large typography (60-96px) optimized for thumbnail readability
+  - 80% text width for maximum visibility
+  - Smart element spacing to prevent overlap
+- **Intelligent Playlist Creation**: Create playlists by artist, theme, lyrics, or song list
+- **Playlist Management**: Create, update, delete, add/remove tracks
+- **Search & Discovery**: Find tracks, artists, albums, playlists
 - **Playback Control**: Play, pause, skip, volume, shuffle, and repeat
+- **User Data**: Access profile, top items, and listening history
+- **Authentication**: OAuth 2.0 with automatic token refresh
+- **Network Detection**: Automatic error messages for blocked access
+- **Environment Setup**: `.env` file support with example template
+
+**Cover Art Features:**
+- Large typography (60-96px) optimized for thumbnail visibility
+- Text spans 80% of cover width for readability
+- Smart element spacing prevents overlap
+- Theme/genre/artist-appropriate color schemes
+- Auto-optimization for Spotify's size requirements
+
+**For Advanced App Development:**
+- Robust error handling with `SpotifyAPIWrapper`
+- Credential validation with clear error messages
+- Data export for React/static web apps (see `ADVANCED_USAGE.md`)
 - **User Data**: Access profile, top items, and listening history
 - **Recommendations**: AI-powered music discovery
 
@@ -70,35 +99,18 @@ python tools/package_skill.py ./my-new-skill ./dist
 
 ## 🚀 Quick Start
 
-### Using the Spotify Skill
+> 📘 **New to this project?** Start with **[GETTING_STARTED.md](GETTING_STARTED.md)** for a simple 5-step setup guide!
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/fabioc-aloha/spotify-skill.git
-   cd spotify-skill
-   ```
+### Using the Spotify Skill (Summary)
 
-2. **Set up credentials**:
-   ```bash
-   # Create Spotify app at https://developer.spotify.com/dashboard
-   # Copy .env.example to .env and add your credentials
-   cp .env.example .env
-   ```
+1. **Enable network access** in Claude Desktop (Settings → Developer → Allow network egress)
+2. **Install dependencies**: `pip install -r requirements.txt` (includes image generation libraries!)
+3. **Get Spotify credentials** from [developer.spotify.com/dashboard](https://developer.spotify.com/dashboard)
+4. **Get refresh token**: `python get_refresh_token.py`
+5. **Test**: `python spotify-api/scripts/test_credentials.py`
+6. **✨ Generate cover art**: `python spotify-api/test_cover_art.py` (Creates actual image files!)
 
-3. **Use the skill**:
-   ```python
-   from spotify_client import SpotifyClient
-
-   client = SpotifyClient()
-   client.authenticate()  # Complete OAuth flow
-
-   # Create a playlist
-   from playlist_creator import PlaylistCreator
-   creator = PlaylistCreator(client)
-   playlist = creator.create_from_artist("The Beatles", limit=20)
-   ```
-
-See [USER_GUIDE.md](USER_GUIDE.md) for complete instructions.
+**Full instructions**: [GETTING_STARTED.md](GETTING_STARTED.md)
 
 ### Creating Your Own Skills
 
@@ -131,9 +143,8 @@ See [USER_GUIDE.md](USER_GUIDE.md) for complete instructions.
 
 | Document | Description |
 |----------|-------------|
-| [USER_GUIDE.md](USER_GUIDE.md) | Complete Spotify skill setup and usage |
-| [QUICK_START.md](QUICK_START.md) | 5-minute setup guide |
-| [SPOTIFY_SKILL_README.md](SPOTIFY_SKILL_README.md) | Project overview and architecture |
+| [GETTING_STARTED.md](GETTING_STARTED.md) | **Start here** - Simple 5-step setup guide |
+| [USER_GUIDE.md](USER_GUIDE.md) | Complete usage guide with examples |
 
 ### Skill Creation
 

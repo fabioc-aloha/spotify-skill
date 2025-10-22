@@ -1,0 +1,15 @@
+# Spotify API Skill - Python Dependencies
+# 
+# Install with: pip install -r requirements.txt
+#
+# Minimum Python version: 3.8+
+
+# HTTP requests for Spotify Web API
+requests>=2.31.0
+
+# Environment variable management from .env files
+python-dotenv>=1.0.0
+
+# Cover art generation dependencies
+cairosvg>=2.7.0
+pillow>=10.0.0

@@ -42,12 +42,18 @@ The Spotify API Skill enables you to interact with Spotify programmatically thro
 
 ## Prerequisites
 
+## Prerequisites
+
 ### Required
 
 - **Python 3.7+** installed on your system
 - **Spotify Account** (Free or Premium)
   - Premium required for playback control features
   - Free account works for playlist management and search
+- **Network Access** (for Claude Desktop) ⚠️ **IMPORTANT**
+  - Settings → Developer → "Allow network egress" must be **ON**
+  - Domain allowlist set to "All domains"
+  - Required for the skill to reach api.spotify.com
 - **Spotify Developer App** credentials
 - **Internet connection** for API access
 
@@ -62,6 +68,29 @@ That's it! The skill only requires the `requests` library for HTTP operations.
 ---
 
 ## Installation & Setup
+
+### Step 0: Enable Network Access (Claude Desktop Only)
+
+⚠️ **CRITICAL FOR CLAUDE DESKTOP USERS**
+
+If using this skill in Claude Desktop, you **MUST** enable network egress first:
+
+1. Open **Claude Desktop**
+2. Navigate to **Settings** → **Developer**
+3. Toggle **"Allow network egress"** to **ON** (the toggle should be blue)
+4. Set **"Domain allowlist"** to either:
+   - **"All domains"** (easiest - shown in screenshot), OR
+   - **"Specified domains"** and add `api.spotify.com` (more secure - restricts to Spotify only)
+
+**Why is this required?**
+- The skill needs to make HTTP requests to `api.spotify.com`
+- Without network egress enabled, all API calls will fail
+- This is a security feature that must be explicitly enabled
+
+**Verification:**
+- The toggle should be blue/ON
+- For "All domains": "Claude can access all domains on the internet" message appears
+- For "Specified domains": `api.spotify.com` is listed
 
 ### Step 1: Create Spotify Developer App
 
