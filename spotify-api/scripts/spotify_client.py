@@ -373,12 +373,16 @@ class SpotifyClient:
         """Get artist details."""
         return self._make_request("GET", f"artists/{artist_id}")
     
-    def get_artist_top_tracks(self, artist_id: str, market: str = "US", 
-                             limit: int = 50) -> List[Dict]:
-        """Get artist's top tracks."""
+    def get_artist_top_tracks(self, artist_id: str, market: str = "US") -> List[Dict]:
+        """
+        Get artist's top tracks (returns up to 10 tracks).
+        
+        Note: Spotify API returns up to 10 top tracks per artist.
+        The limit parameter is not supported by this endpoint.
+        """
         data = self._make_request(
             "GET", f"artists/{artist_id}/top-tracks",
-            params={"market": market, "limit": limit}
+            params={"market": market}
         )
         return data.get("tracks", [])
     

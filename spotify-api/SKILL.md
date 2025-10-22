@@ -104,9 +104,25 @@ if client.refresh_token:
 
 ### Common Operations
 
-**List user playlists:**
+**List ALL user playlists (with pagination):**
 ```python
-playlists = client.get_user_playlists(limit=50)
+# Get all playlists - handles pagination automatically
+all_playlists = []
+offset = 0
+limit = 50  # Max allowed per request
+
+while True:
+    playlists = client.get_user_playlists(limit=limit, offset=offset)
+    if not playlists:
+        break  # No more playlists
+    all_playlists.extend(playlists)
+    offset += limit
+    if len(playlists) < limit:
+        break  # Last page (fewer than limit returned)
+
+print(f"Total playlists: {len(all_playlists)}")
+for playlist in all_playlists:
+    print(f"- {playlist['name']} ({playlist['tracks']['total']} tracks)")
 ```
 
 **Create a new playlist:**
@@ -131,6 +147,40 @@ client.add_tracks_to_playlist(
 )
 ```
 
+## Playlist Management Workflows
+
+### List All User Playlists
+
+**Important:** Users may have more than 50 playlists. Always use pagination to get ALL playlists:
+
+```python
+# Get ALL playlists using pagination
+all_playlists = []
+offset = 0
+limit = 50  # Spotify's max per request
+
+while True:
+    batch = client.get_user_playlists(limit=limit, offset=offset)
+    if not batch:
+        break  # No more playlists to fetch
+
+    all_playlists.extend(batch)
+    print(f"Fetched {len(batch)} playlists (total so far: {len(all_playlists)})")
+
+    offset += limit
+    if len(batch) < limit:
+        break  # Last page - fewer results than limit means we're done
+
+print(f"\n✓ Total playlists found: {len(all_playlists)}")
+
+# Display all playlists with details
+for i, playlist in enumerate(all_playlists, 1):
+    print(f"{i}. {playlist['name']}")
+    print(f"   Tracks: {playlist['tracks']['total']}")
+    print(f"   Public: {playlist['public']}")
+    print(f"   ID: {playlist['id']}")
+```
+
 ## Playlist Creation Workflows
 
 ### By Artist/Band Name
@@ -147,15 +197,14 @@ else:
     artist_id = artists[0]['id']  # Get Spotify ID of first result
 
     # STEP 2: Get the artist's most popular tracks
-    # Spotify returns up to 10 top tracks per country
-    tracks = client.get_artist_top_tracks(artist_id=artist_id, limit=50)
+    # Note: Spotify API returns up to 10 top tracks per artist
+    tracks = client.get_artist_top_tracks(artist_id=artist_id)
     track_ids = [t['id'] for t in tracks]  # Extract just the track IDs
 
     # STEP 3: Create a new playlist and add the tracks
     playlist = client.create_playlist(name="The Beatles Collection")
     client.add_tracks_to_playlist(playlist['id'], track_ids)
     print(f"Created playlist with {len(track_ids)} tracks")
-```
 ```
 
 ### By Theme/Mood
@@ -176,14 +225,14 @@ for query in theme_queries:
     results = client.search_tracks(query=query, limit=50)  # Get up to 50 per query
     all_tracks.extend(results)  # Combine results from all queries
 
-# Note: all_tracks may contain duplicates if same track matches multiple queries
+# STEP 3: Remove duplicates (same track may match multiple queries)
+# Use set() with track IDs to keep only unique tracks
+unique_track_ids = list(set(t['id'] for t in all_tracks))
 
-# STEP 3: Create playlist with the first 100 tracks (Spotify batch limit)
+# STEP 4: Create playlist with unique tracks (limit to 100 for reasonable size)
 playlist = client.create_playlist(name="Chill Indie Evening")
-track_ids = [t['id'] for t in all_tracks[:100]]  # Limit to first 100 tracks
-client.add_tracks_to_playlist(playlist['id'], track_ids)
-print(f"Created playlist with {len(track_ids)} tracks")
-```
+client.add_tracks_to_playlist(playlist['id'], unique_track_ids[:100])
+print(f"Created playlist with {len(unique_track_ids[:100])} tracks")
 ```
 
 ### By Lyrics Content
@@ -210,7 +259,7 @@ print(f"Found {len(all_tracks)} total matches, {len(unique_track_ids)} unique tr
 # STEP 4: Create playlist (limit to 100 tracks for reasonable size)
 playlist = client.create_playlist(name="Love & Heartbreak")
 client.add_tracks_to_playlist(playlist['id'], unique_track_ids[:100])
-```
+print(f"Created playlist with {len(unique_track_ids[:100])} unique tracks")
 ```
 
 ### From Specific Song List
@@ -240,88 +289,27 @@ if track_ids:
 else:
     print("No tracks found - playlist is empty")
 ```
-```
 
 ## 🎨 Cover Art Image Generation
 
 > **⚡ UNIQUE CAPABILITY: This skill can generate images!**
 >
-> Claude cannot generate images natively, but this skill bypasses that limitation by creating custom SVG graphics and converting them to PNG images. This enables you to generate professional-looking playlist cover art with:
-> - Large, readable typography (60-96px fonts) optimized for thumbnails
-> - **Automatic text wrapping** - Long titles break across multiple lines intelligently
-> - **Content-driven color selection** - Analyze playlist tracks/artists to determine appropriate colors
-> - Automatic layout optimization with 80% text width
-> - Smart element spacing to prevent overlap
-> - SVG → PNG conversion with auto-optimization for Spotify's requirements
->
-> **This is real image generation**, not just visualization descriptions!
+> Claude cannot generate images natively, but this skill bypasses that limitation by creating custom SVG graphics and converting them to PNG images for Spotify playlist covers.
 
-> **� CRITICAL INSTRUCTION FOR COVER ART GENERATION:**
+> **🚨 MANDATORY: USE THE COVER ART LLM GUIDE**
 >
-> **⚠️ ALWAYS read [references/COVER_ART_LLM_GUIDE.md](references/COVER_ART_LLM_GUIDE.md) FIRST before generating any cover art!**
+> **⚠️ DO NOT attempt to generate cover art without first reading the complete execution guide.**
 >
-> This guide is REQUIRED reading and contains the complete execution instructions for content-driven design. DO NOT generate cover art without consulting this guide first.
-
-> **�📋 RECOMMENDED WORKFLOW - Content-Driven Design:**
+> **➡️ READ THIS FILE FIRST: [references/COVER_ART_LLM_GUIDE.md](references/COVER_ART_LLM_GUIDE.md)**
 >
-> **The best approach is to analyze the playlist's actual content to determine colors:**
+> **This guide is REQUIRED and contains:**
+> - Complete step-by-step execution instructions
+> - How to analyze playlist content to determine appropriate colors
+> - Genre-to-color and mood-to-color mapping tables
+> - Typography rules and accessibility requirements
+> - Edge case handling and quality checklist
 >
-> 1. **READ THE GUIDE FIRST** - Open and read [references/COVER_ART_LLM_GUIDE.md](references/COVER_ART_LLM_GUIDE.md)
-> 2. **Analyze Playlist Content** - Get the playlist's tracks and artists using the Spotify API
-> 3. **Extract Characteristics** - Determine genre, energy level (1-10), and mood from the actual content
-> 4. **Apply Color Psychology** - Use the color mapping tables in the guide to choose appropriate colors
-> 5. **Generate with Custom Colors** - Pass determined colors to the generator
->
-> **📚 THE LLM GUIDE CONTAINS:** [references/COVER_ART_LLM_GUIDE.md](references/COVER_ART_LLM_GUIDE.md)
-> - Complete step-by-step execution process
-> - How to analyze playlist content using the Spotify API
-> - Genre-to-color mapping tables (rock → red, jazz → purple, etc.)
-> - Mood-to-color mapping tables (energetic → orange, chill → blue, etc.)
-> - Energy level analysis (1-10 scale)
-> - Color psychology principles
-> - Typography rules and accessibility requirements (WCAG 2.1 AA)
-> - Complete workflow examples with code
-> - Edge case handling (long titles, special characters)
-> - Quality assurance checklist
->
-> **Example: Content-Driven Approach**
-> ```python
-> # 1. Get playlist content
-> playlist = client.get_playlist(playlist_id)
-> tracks = playlist['tracks']['items']
-> artists = [track['track']['artists'][0]['name'] for track in tracks if track['track']]
->
-> # 2. Analyze content (you determine from artists/genres)
-> # Artists: Metallica, Rage Against the Machine, Linkin Park
-> # Detected: High-energy rock/metal, aggressive mood
-> # Energy: 9/10
->
-> # 3. Determine colors using color psychology
-> gradient_start = "#E63946"  # Intense red (high energy, aggressive)
-> gradient_end = "#1D1D1D"    # Almost black (metal aesthetic)
-> text_color = "#FFFFFF"      # Maximum contrast
->
-> # 4. Generate with determined colors
-> art_gen.create_and_upload_cover(
->     playlist_id=playlist['id'],
->     title="Beast Mode Gym",
->     gradient_start=gradient_start,
->     gradient_end=gradient_end,
->     text_color=text_color
-> )
-> ```
-
-> **� ALTERNATIVE: Quick Presets (Legacy)**
->
-> For quick usage without content analysis, preset themes are available:
->
-> 1. **For Vague Requests** - If the playlist name is generic ("My Playlist", "Good Music"), ASK clarifying questions:
->    - What genres are in this playlist?
->    - What's the mood or context? (workout, relaxation, party, study)
->
-> 2. **For Long Titles** (>25 characters) - Text wrapping is automatic
->
-> 3. **Always Verify** - Confirm the design is readable and appropriate
+> **Do not proceed with cover art generation without consulting this guide first.**
 
 ### ⚠️ Required Scope for Upload
 
@@ -337,11 +325,9 @@ else:
 
 **📖 Having trouble?** See [COVER_ART_TROUBLESHOOTING.md](COVER_ART_TROUBLESHOOTING.md) for detailed solutions.
 
-### Content-Driven Generation (Recommended)
+### Basic Usage Example
 
-> **🚨 BEFORE GENERATING: Read [references/COVER_ART_LLM_GUIDE.md](references/COVER_ART_LLM_GUIDE.md) for complete instructions!**
-
-**Analyze playlist content to determine contextually appropriate colors:**
+**⚠️ Remember: Read [references/COVER_ART_LLM_GUIDE.md](references/COVER_ART_LLM_GUIDE.md) before generating cover art!**
 
 ```python
 from cover_art_generator import CoverArtGenerator
@@ -349,139 +335,19 @@ from cover_art_generator import CoverArtGenerator
 # Initialize generator (uses same credentials as SpotifyClient)
 art_gen = CoverArtGenerator(client_id, client_secret, access_token)
 
-# STEP 1: Read the LLM guide for execution instructions
-# Open references/COVER_ART_LLM_GUIDE.md and follow the workflow
-
-# STEP 2: Get playlist content using SpotifyClient
-playlist = client.get_playlist("7i9dQZF1DXaXB8fQg7xif")
-tracks = playlist['tracks']['items']
-artists = [track['track']['artists'][0]['name'] for track in tracks]
-
-# STEP 3: Analyze content characteristics (use guide's mapping tables)
-# - Determine genre from artists/tracks
-# - Assess energy level (1-10 scale)
-# - Identify mood/vibe
-# - Apply color psychology from guide
-
-# STEP 4: Generate with analyzed colors
-# Example: High-energy rock playlist
-# Colors determined using guide's genre/mood tables:
-# Rock + High Energy (9/10) + Intense Mood = Red/Dark gradient
-
+# Generate and upload cover art
+# (Follow the LLM guide for how to determine appropriate colors)
 art_gen.create_and_upload_cover(
     playlist_id=playlist['id'],
-    title="Beast Mode",           # Large, readable text
+    title="Beast Mode",           # Main title (large text)
     subtitle="Gym",                # Optional subtitle
-    gradient_start="#E63946",      # Intense red (high energy rock)
-    gradient_end="#1D1D1D",        # Dark background (rock/metal)
-    text_color="#FFFFFF"           # Maximum contrast (WCAG AA)
+    gradient_start="#E63946",      # Colors determined from guide
+    gradient_end="#1D1D1D",
+    text_color="#FFFFFF"
 )
 ```
 
-**📚 Complete Workflow:** [references/COVER_ART_LLM_GUIDE.md](references/COVER_ART_LLM_GUIDE.md) contains:
-- Step-by-step execution process
-- Genre-to-color mapping tables
-- Mood-to-color mapping tables
-- Energy level assessment (1-10)
-- Color psychology principles
-- Typography & accessibility rules
-- Edge case handling
-- Quality checklist
-
-### Quick Presets (Legacy)
-
-20+ preset themes with mood-appropriate color schemes:
-
-```python
-# Mood themes: summer, chill, energetic, dark, romantic, melancholic,
-#              euphoric, peaceful, intense, dreamy, nostalgic, party, etc.
-art_gen.create_and_upload_cover(
-    playlist_id=playlist['id'],
-    title="Chill Vibes",
-    theme="chill"  # Blue/teal gradient
-)
-```
-
-### Genre-Based Cover Art
-
-15+ genre-specific color schemes:
-
-```python
-# Genres: rock, pop, jazz, classical, electronic, hip-hop, country,
-#         indie, metal, r&b, blues, folk, reggae, punk, soul
-art_gen.create_and_upload_cover(
-    playlist_id=playlist['id'],
-    title="Rock Classics",
-    genre="rock"  # Red/black gradient
-)
-```
-
-### Artist-Specific Cover Art
-
-Preset colors for popular artists/bands:
-
-```python
-# Artists: beatles, pinkfloyd, radiohead, queen, nirvana, davidbowie,
-#          ledzeppelin, acdc, therollingstones, fleetwoodmac
-art_gen.create_and_upload_cover(
-    playlist_id=playlist['id'],
-    title="Best of Queen",
-    artist="queen"  # Regal gold/burgundy
-)
-```
-
-### Complete Workflow: Create Playlist with Cover Art
-
-```python
-from spotify_client import SpotifyClient
-from cover_art_generator import CoverArtGenerator
-
-# STEP 1: Initialize both clients (use same credentials)
-client = SpotifyClient(client_id, client_secret, access_token)
-art_gen = CoverArtGenerator(client_id, client_secret, access_token)
-
-# STEP 2: Get current user's ID (needed to create playlist)
-user_id = client.get_current_user()["id"]
-
-# STEP 3: Create a new playlist
-playlist = client.create_playlist(
-    name="Summer Rock Anthems",
-    description="High-energy rock hits for summer",
-    public=True  # Make playlist visible to others
-)
-print(f"Created playlist: {playlist['name']} (ID: {playlist['id']})")
-
-# STEP 4: Search for tracks and add to playlist
-rock_tracks = client.search_tracks("summer rock", limit=50)
-track_ids = [t['id'] for t in rock_tracks]
-client.add_tracks_to_playlist(playlist['id'], track_ids)
-print(f"Added {len(track_ids)} tracks")
-
-# STEP 5: Generate and upload custom cover art
-# Uses large text optimized for thumbnails + genre-appropriate colors
-art_gen.create_and_upload_cover(
-    playlist_id=playlist['id'],
-    title="Summer Rock",      # Main title (large text)
-    subtitle="2024 Anthems",  # Optional subtitle (smaller text)
-    genre="rock"              # Uses rock color scheme (red/black)
-    # Alternatives: theme="energetic" or artist="acdc" or custom colors
-)
-print(f"✓ Cover art uploaded")
-
-# STEP 6: Print playlist URL for user to view
-print(f"✓ Playlist ready: {playlist['external_urls']['spotify']}")
-```
-```
-
-### Cover Art Design Features
-
-- **Large typography**: 60-96px font size scaled to text length for thumbnail readability
-- **Automatic text wrapping**: Long titles intelligently break across multiple lines at word boundaries (max 20 chars/line)
-- **80% text width**: Text spans 80% of cover width (480px on 600px canvas)
-- **Smart spacing**: Elements positioned to prevent overlap, with dynamic vertical spacing for multi-line titles
-- **Theme-appropriate colors**: Automatic color selection based on mood, genre, or artist
-- **Gradient backgrounds**: Radial gradients with decorative accent shapes
-- **Auto-optimization**: Images automatically compressed to meet Spotify's <256KB requirement
+**All cover art generation workflows, color selection guidance, and advanced features are documented in [references/COVER_ART_LLM_GUIDE.md](references/COVER_ART_LLM_GUIDE.md).**
 
 ## Advanced Operations
 
@@ -550,7 +416,6 @@ if current and current.get('item'):
     print(f"Now playing: {track['name']} by {track['artists'][0]['name']}")
 else:
     print("Nothing is currently playing")
-```
 ```
 
 ## Authentication & Credentials

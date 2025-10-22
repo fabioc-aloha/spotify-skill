@@ -253,12 +253,26 @@ print(f"👥 Followers: {profile['followers']['total']}")
 ### List Your Playlists
 
 ```python
+# List first 50 playlists
 playlists = client.get_user_playlists(limit=50)
 for playlist in playlists:
     print(f"📋 {playlist['name']}")
     print(f"   Tracks: {playlist['tracks']['total']}")
     print(f"   Public: {playlist['public']}")
     print()
+
+# To list ALL playlists (if you have more than 50), use pagination:
+all_playlists = []
+offset = 0
+limit = 50
+while True:
+    batch = client.get_user_playlists(limit=limit, offset=offset)
+    if not batch:
+        break
+    all_playlists.extend(batch)
+    offset += limit
+
+print(f"Total playlists: {len(all_playlists)}")
 ```
 
 ---
@@ -1214,7 +1228,7 @@ if client.token_expires_at:
 
 #### Artists
 - `get_artist(artist_id)` - Get artist details
-- `get_artist_top_tracks(artist_id, market, limit)` - Artist's top tracks
+- `get_artist_top_tracks(artist_id, market)` - Artist's top tracks (returns up to 10)
 - `get_related_artists(artist_id, limit)` - Related artists
 - `get_artist_albums(artist_id, limit, offset)` - Artist's albums
 

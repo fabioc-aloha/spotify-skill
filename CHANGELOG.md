@@ -99,7 +99,7 @@ First public release of the Spotify Skills development toolkit!
 ## [Unreleased]
 
 ### Planned for v1.0.0
-- [ ] Additional cover art templates and animations
+- [ ] Additional cover art templates and design patterns
 - [ ] Batch playlist operations
 - [ ] Extended analytics and statistics
 - [ ] Performance optimizations
