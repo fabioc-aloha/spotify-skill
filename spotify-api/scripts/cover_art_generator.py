@@ -2,7 +2,23 @@
 Spotify Cover Art Generator
 
 Generates custom SVG-based cover art and uploads to Spotify playlists.
-Supports preset themes, genre-based colors, and custom color schemes.
+
+IMPORTANT: This tool is designed to be used with the LLM execution guide.
+See: spotify-api/references/COVER_ART_LLM_GUIDE.md
+
+The guide provides comprehensive instructions for:
+- Analyzing playlist content to determine appropriate colors
+- Applying color psychology based on genre, mood, and energy
+- Creating contextually appropriate designs without preset themes
+- Ensuring accessibility and professional quality
+
+Color Selection Approaches:
+1. Content-Driven (RECOMMENDED): Analyze playlist tracks/artists using the guide
+2. Preset Themes (LEGACY): Use predefined theme/genre/artist colors below
+3. Custom Colors: Specify exact RGB values
+
+For best results, follow the LLM guide to analyze playlist content and 
+determine colors using color psychology rather than relying on presets.
 """
 
 import os
@@ -18,6 +34,20 @@ except ImportError as e:
     print("pip install cairosvg pillow")
     raise e
 
+
+# ============================================================================
+# LEGACY PRESETS (For backward compatibility)
+# ============================================================================
+# These preset color schemes are provided for quick usage, but the RECOMMENDED
+# approach is to analyze playlist content using the LLM guide and determine
+# colors based on:
+# - Actual genres detected from tracks/artists
+# - Energy level analysis (1-10 scale)
+# - Mood extracted from content
+# - Color psychology principles
+#
+# See: spotify-api/references/COVER_ART_LLM_GUIDE.md for the content-driven approach
+# ============================================================================
 
 # Preset theme color schemes (gradient_start, gradient_end, text_color)
 THEME_COLORS: Dict[str, Tuple[str, str, str]] = {
@@ -185,6 +215,17 @@ class CoverArtGenerator:
         """
         Generate cover art image (SVG → PNG).
         Typography optimized for thumbnail readability at 80% width.
+        
+        RECOMMENDED WORKFLOW:
+        1. Use COVER_ART_LLM_GUIDE.md to analyze playlist content
+        2. Determine colors from actual tracks/artists/genres
+        3. Apply color psychology based on energy and mood
+        4. Pass custom colors (gradient_start, gradient_end, text_color)
+        
+        This method supports three approaches:
+        - Content-Driven (RECOMMENDED): Use guide to analyze and pass custom colors
+        - Legacy Presets: Use theme/genre/artist parameters for preset colors
+        - Direct Colors: Specify exact gradient_start, gradient_end, text_color
         
         Args:
             title: Main title text (will be large and readable)

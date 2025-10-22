@@ -220,41 +220,69 @@ client.add_tracks_to_playlist(playlist['id'], track_ids)
 > Claude cannot generate images natively, but this skill bypasses that limitation by creating custom SVG graphics and converting them to PNG images. This enables you to generate professional-looking playlist cover art with:
 > - Large, readable typography (60-96px fonts) optimized for thumbnails
 > - **Automatic text wrapping** - Long titles break across multiple lines intelligently
-> - Theme/genre/artist-appropriate color schemes (30+ presets)
+> - **Content-driven color selection** - Analyze playlist tracks/artists to determine appropriate colors
 > - Automatic layout optimization with 80% text width
 > - Smart element spacing to prevent overlap
 > - SVG → PNG conversion with auto-optimization for Spotify's requirements
 >
 > **This is real image generation**, not just visualization descriptions!
 
-> **📋 BEST PRACTICES FOR COVER ART GENERATION:**
+> **📋 RECOMMENDED WORKFLOW - Content-Driven Design:**
 >
-> When a user requests cover art for a playlist:
+> **The best approach is to analyze the playlist's actual content to determine colors:**
 >
-> 1. **For Vague Requests** - If the playlist name is generic ("My Playlist", "Good Music", "Vibes"), ASK clarifying questions:
+> 1. **Analyze Playlist Content** - Get the playlist's tracks and artists
+> 2. **Extract Characteristics** - Determine genre, energy level (1-10), and mood from content
+> 3. **Apply Color Psychology** - Use color theory to choose appropriate colors
+> 4. **Generate with Custom Colors** - Pass determined colors to the generator
+>
+> **📚 REQUIRED READING:** See [references/COVER_ART_LLM_GUIDE.md](references/COVER_ART_LLM_GUIDE.md) for the complete content-driven workflow. This self-contained guide provides:
+> - How to analyze playlist content using the Spotify API
+> - Genre-to-color and mood-to-color mapping principles
+> - Energy level analysis (1-10 scale)
+> - Color psychology reference
+> - Typography rules and accessibility requirements
+> - Complete execution examples
+> - Edge case handling
+>
+> **Example: Content-Driven Approach**
+> ```python
+> # 1. Get playlist content
+> playlist = client.get_playlist(playlist_id)
+> tracks = playlist['tracks']['items']
+> artists = [track['track']['artists'][0]['name'] for track in tracks if track['track']]
+>
+> # 2. Analyze content (you determine from artists/genres)
+> # Artists: Metallica, Rage Against the Machine, Linkin Park
+> # Detected: High-energy rock/metal, aggressive mood
+> # Energy: 9/10
+>
+> # 3. Determine colors using color psychology
+> gradient_start = "#E63946"  # Intense red (high energy, aggressive)
+> gradient_end = "#1D1D1D"    # Almost black (metal aesthetic)
+> text_color = "#FFFFFF"      # Maximum contrast
+>
+> # 4. Generate with determined colors
+> art_gen.create_and_upload_cover(
+>     playlist_id=playlist['id'],
+>     title="Beast Mode Gym",
+>     gradient_start=gradient_start,
+>     gradient_end=gradient_end,
+>     text_color=text_color
+> )
+> ```
+
+> **� ALTERNATIVE: Quick Presets (Legacy)**
+>
+> For quick usage without content analysis, preset themes are available:
+>
+> 1. **For Vague Requests** - If the playlist name is generic ("My Playlist", "Good Music"), ASK clarifying questions:
 >    - What genres are in this playlist?
 >    - What's the mood or context? (workout, relaxation, party, study)
->    - Any specific era or style? (80s, modern, vintage)
 >
-> 2. **For Long Titles** (>25 characters) - Text wrapping is automatic, but consider:
->    - Abbreviating common words ("and" → "&")
->    - Using smaller fonts proportionally
->    - Breaking into multiple lines at natural word boundaries
+> 2. **For Long Titles** (>25 characters) - Text wrapping is automatic
 >
-> 3. **Always Verify** - After generation, confirm the design meets these requirements:
->    - Text readable at thumbnail size (64x64px minimum)
->    - High contrast (4.5:1 ratio minimum)
->    - Genre-appropriate styling
->    - Professional appearance
->
-> **📚 Complete LLM Guide:** For comprehensive instructions on creating high-quality cover art, see [references/COVER_ART_LLM_GUIDE.md](references/COVER_ART_LLM_GUIDE.md). This guide includes:
-> - Step-by-step execution process
-> - Template selection logic
-> - Typography rules and positioning
-> - Animation implementation (optional)
-> - Accessibility compliance (WCAG 2.1)
-> - Error recovery strategies
-> - Sample execution flows
+> 3. **Always Verify** - Confirm the design is readable and appropriate
 
 ### ⚠️ Required Scope for Upload
 
@@ -270,9 +298,9 @@ client.add_tracks_to_playlist(playlist['id'], track_ids)
 
 **📖 Having trouble?** See [COVER_ART_TROUBLESHOOTING.md](COVER_ART_TROUBLESHOOTING.md) for detailed solutions.
 
-**The skill automatically generates custom cover art with large, readable typography optimized for thumbnail viewing.**
+### Content-Driven Generation (Recommended)
 
-Use `cover_art_generator.py` to create visually appealing covers that match the playlist's mood, theme, genre, or artist:
+**Analyze playlist content to determine contextually appropriate colors:**
 
 ```python
 from cover_art_generator import CoverArtGenerator
@@ -280,16 +308,28 @@ from cover_art_generator import CoverArtGenerator
 # Initialize generator (uses same credentials as SpotifyClient)
 art_gen = CoverArtGenerator(client_id, client_secret, access_token)
 
-# Generate and upload cover art in one step
+# 1. Get playlist content
+playlist = client.get_playlist("7i9dQZF1DXaXB8fQg7xif")
+tracks = playlist['tracks']['items']
+
+# 2. Analyze content (determine from actual tracks/artists)
+# Example: High-energy rock playlist
+# Determined colors using color psychology from guide
+
+# 3. Generate with analyzed colors
 art_gen.create_and_upload_cover(
     playlist_id=playlist['id'],
-    title="Summer Vibes",      # Large text (80% width, readable at thumbnail size)
-    subtitle="2024",            # Smaller subtitle
-    theme="summer"              # Auto-selects appropriate colors
+    title="Beast Mode",           # Large, readable text
+    subtitle="Gym",                # Optional subtitle
+    gradient_start="#E63946",      # Intense red (high energy)
+    gradient_end="#1D1D1D",        # Dark background (rock/metal)
+    text_color="#FFFFFF"           # Maximum contrast
 )
 ```
 
-### Theme-Based Cover Art
+**See [references/COVER_ART_LLM_GUIDE.md](references/COVER_ART_LLM_GUIDE.md) for the complete workflow.**
+
+### Quick Presets (Legacy)
 
 20+ preset themes with mood-appropriate color schemes:
 
