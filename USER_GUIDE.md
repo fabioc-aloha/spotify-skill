@@ -1,4 +1,6 @@
-# Spotify API Skill - Complete User Guide
+# Spotify Skills for Claude - Complete User Guide
+
+**Production Spotify API integration for Claude Desktop**
 
 ## Table of Contents
 
@@ -21,7 +23,9 @@
 
 ## Overview
 
-The Spotify API Skill enables you to interact with Spotify programmatically through Python. This skill provides:
+**Spotify Skills for Claude** provides a production-ready Spotify API integration for Claude Desktop. This skill enables you to interact with Spotify programmatically through Python.
+
+This skill provides:
 
 - ✅ **Complete Spotify API access** - 40+ methods covering all major operations
 - ✅ **OAuth 2.0 authentication** - Secure, automatic token refresh

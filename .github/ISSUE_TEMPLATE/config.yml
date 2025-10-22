@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 💬 GitHub Discussions
+    url: https://github.com/fabioc-aloha/spotify-skill/discussions
+    about: Ask questions and discuss ideas with the community
+  - name: 📖 Documentation
+    url: https://github.com/fabioc-aloha/spotify-skill#readme
+    about: Read the complete documentation and guides
+  - name: 🚀 Getting Started
+    url: https://github.com/fabioc-aloha/spotify-skill/blob/main/GETTING_STARTED.md
+    about: Quick setup guide for new users

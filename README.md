@@ -3,7 +3,7 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/banner-dark.svg">
   <source media="(prefers-color-scheme: light)" srcset=".github/banner-light.svg">
-  <img alt="Spotify Skill Banner" src=".github/banner-dark.svg" width="800">
+  <img alt="Spotify Skills for Claude Banner" src=".github/banner-dark.svg" width="800">
 </picture>
 
 <br/><br/>
@@ -12,8 +12,10 @@
 [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![Claude](https://img.shields.io/badge/Claude-Skills-orange.svg)](https://support.claude.com/en/articles/12512198-how-to-create-custom-skills)
 [![Spotify API](https://img.shields.io/badge/Spotify-API-1DB954.svg)](https://developer.spotify.com/documentation/web-api)
+[![Release](https://img.shields.io/badge/release-v0.9.0-brightgreen.svg)](https://github.com/fabioc-aloha/spotify-skill/releases/tag/v0.9.0)
+[![GitHub Discussions](https://img.shields.io/badge/discussions-join-blue.svg)](https://github.com/fabioc-aloha/spotify-skill/discussions)
 
-**Production-ready Spotify API integration + Complete toolkit for creating Claude Desktop Skills**
+**Spotify Skills for Claude - Production Spotify Integration + Complete Skills Toolkit**
 
 [Quick Start](#-quick-start) • [Features](#-features) • [Documentation](#-documentation) • [Examples](#-examples) • [Tools](#-tools)
 
@@ -23,7 +25,7 @@
 
 ## 🎯 Overview
 
-This project is a **comprehensive Claude Desktop Skills development platform** that combines:
+**Spotify Skills for Claude** is a comprehensive development platform that combines:
 
 - 🎵 **Production Spotify API Skill** - Fully-featured example with OAuth 2.0 and 40+ methods
 - 🛠️ **Automated Development Tools** - Create, validate, and package skills effortlessly
@@ -303,9 +305,11 @@ Special thanks to:
 
 ## 💬 Support
 
-- 📖 Read the [complete documentation](SPOTIFY_SKILL_README.md)
+- 📖 Read the [complete documentation](USER_GUIDE.md)
 - 🐛 [Report issues](https://github.com/fabioc-aloha/spotify-skill/issues)
-- 💡 [Submit ideas](https://github.com/fabioc-aloha/spotify-skill/discussions)
+- 💡 [Join discussions](https://github.com/fabioc-aloha/spotify-skill/discussions)
+- 🚀 [View changelog](CHANGELOG.md)
+- 🤝 [Contributing guidelines](CONTRIBUTING.md)
 
 ---
 
@@ -314,5 +318,7 @@ Special thanks to:
 **Built with ❤️ for the Claude Skills community**
 
 ⭐ Star this repo if you find it helpful!
+
+**Current Release**: [v0.9.0](https://github.com/fabioc-aloha/spotify-skill/releases/tag/v0.9.0) • [Download Skill](https://github.com/fabioc-aloha/spotify-skill/releases/download/v0.9.0/spotify-api.skill)
 
 </div>

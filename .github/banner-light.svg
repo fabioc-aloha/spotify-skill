@@ -33,12 +33,12 @@
   
   <!-- Title text -->
   <text x="190" y="90" font-family="'Segoe UI', -apple-system, system-ui, Arial, sans-serif" font-size="46" font-weight="bold" fill="#191414">
-    Spotify Skill
+    Spotify Skills for Claude
   </text>
   
   <!-- Subtitle -->
   <text x="190" y="125" font-family="'Segoe UI', -apple-system, system-ui, Arial, sans-serif" font-size="18" fill="#1DB954">
-    Complete Claude Desktop Skills Development Toolkit
+    Production Spotify Integration + Complete Skills Toolkit
   </text>
   
   <!-- Decorative elements -->

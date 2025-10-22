@@ -1,4 +1,6 @@
-# Getting Started with Spotify API Skill
+# Getting Started with Spotify Skills for Claude
+
+**Quick setup guide for the Spotify API Skill**
 
 ## Prerequisites
 
