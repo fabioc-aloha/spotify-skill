@@ -140,17 +140,24 @@ client.add_tracks_to_playlist(
 Create a playlist containing all or most popular tracks by a specific artist:
 
 ```python
-# Search for artist
+# STEP 1: Search for the artist by name
 artists = client.search_artists(query="The Beatles", limit=1)
-artist_id = artists[0]['id']
+if not artists:
+    print("Artist not found")
+    # Handle error: artist doesn't exist or name is misspelled
+else:
+    artist_id = artists[0]['id']  # Get Spotify ID of first result
 
-# Get artist's top tracks
-tracks = client.get_artist_top_tracks(artist_id=artist_id, limit=50)
-track_ids = [t['id'] for t in tracks]
+    # STEP 2: Get the artist's most popular tracks
+    # Spotify returns up to 10 top tracks per country
+    tracks = client.get_artist_top_tracks(artist_id=artist_id, limit=50)
+    track_ids = [t['id'] for t in tracks]  # Extract just the track IDs
 
-# Create playlist and add tracks
-playlist = client.create_playlist(name="The Beatles Collection")
-client.add_tracks_to_playlist(playlist['id'], track_ids)
+    # STEP 3: Create a new playlist and add the tracks
+    playlist = client.create_playlist(name="The Beatles Collection")
+    client.add_tracks_to_playlist(playlist['id'], track_ids)
+    print(f"Created playlist with {len(track_ids)} tracks")
+```
 ```
 
 ### By Theme/Mood
@@ -158,21 +165,27 @@ client.add_tracks_to_playlist(playlist['id'], track_ids)
 Create thematic playlists by searching for tracks matching mood keywords:
 
 ```python
-# Search by theme
+# STEP 1: Define search queries for your theme
+# Spotify search syntax: "genre:indie mood:chill" or "genre:indie year:2020-2024"
 theme_queries = [
-    "genre:indie mood:chill",
-    "genre:indie year:2020-2024"
+    "genre:indie mood:chill",      # Search for chill indie tracks
+    "genre:indie year:2020-2024"   # Search for recent indie tracks
 ]
 
+# STEP 2: Search for tracks matching each query
 all_tracks = []
 for query in theme_queries:
-    results = client.search_tracks(query=query, limit=50)
-    all_tracks.extend(results)
+    results = client.search_tracks(query=query, limit=50)  # Get up to 50 per query
+    all_tracks.extend(results)  # Combine results from all queries
 
-# Create playlist with theme-matched tracks
+# Note: all_tracks may contain duplicates if same track matches multiple queries
+
+# STEP 3: Create playlist with the first 100 tracks (Spotify batch limit)
 playlist = client.create_playlist(name="Chill Indie Evening")
-track_ids = [t['id'] for t in all_tracks[:100]]
+track_ids = [t['id'] for t in all_tracks[:100]]  # Limit to first 100 tracks
 client.add_tracks_to_playlist(playlist['id'], track_ids)
+print(f"Created playlist with {len(track_ids)} tracks")
+```
 ```
 
 ### By Lyrics Content
@@ -180,18 +193,26 @@ client.add_tracks_to_playlist(playlist['id'], track_ids)
 Search for tracks with specific lyrical themes using Spotify's search:
 
 ```python
-# Search by lyrical content (Spotify search can include lyrics)
+# STEP 1: Define keywords related to lyrical content
+# Note: Spotify search indexes track/artist names and some metadata,
+# not full lyrics, so results are based on title/description matching
 queries = ["love", "heartbreak", "summer", "midnight"]
-all_tracks = []
 
+# STEP 2: Search for tracks matching each keyword
+all_tracks = []
 for keyword in queries:
-    results = client.search_tracks(query=keyword, limit=20)
+    results = client.search_tracks(query=keyword, limit=20)  # 20 tracks per keyword
     all_tracks.extend(results)
 
-# Remove duplicates and create playlist
+# STEP 3: Remove duplicates (same track may match multiple keywords)
+# Use set() with track IDs to keep only unique tracks
 unique_track_ids = list(set(t['id'] for t in all_tracks))
+print(f"Found {len(all_tracks)} total matches, {len(unique_track_ids)} unique tracks")
+
+# STEP 4: Create playlist (limit to 100 tracks for reasonable size)
 playlist = client.create_playlist(name="Love & Heartbreak")
 client.add_tracks_to_playlist(playlist['id'], unique_track_ids[:100])
+```
 ```
 
 ### From Specific Song List
@@ -199,18 +220,28 @@ client.add_tracks_to_playlist(playlist['id'], unique_track_ids[:100])
 Create a playlist from a user-provided list of track URIs or search terms:
 
 ```python
-# User provides song names or URIs
+# STEP 1: Get the list of songs from the user
+# User provides song names (can also use Spotify URIs like "spotify:track:...")
 song_list = ["Shape of You", "Blinding Lights", "As It Was"]
 
+# STEP 2: Search for each song and collect track IDs
 track_ids = []
 for song_name in song_list:
-    results = client.search_tracks(query=song_name, limit=1)
+    results = client.search_tracks(query=song_name, limit=1)  # Get best match
     if results:
-        track_ids.append(results[0]['id'])
+        track_ids.append(results[0]['id'])  # Add first result's ID
+        print(f"✓ Found: {results[0]['name']} by {results[0]['artists'][0]['name']}")
+    else:
+        print(f"✗ Not found: {song_name}")  # Song doesn't exist or name is wrong
 
-# Create playlist
+# STEP 3: Create playlist with found tracks
 playlist = client.create_playlist(name="My Favorites")
-client.add_tracks_to_playlist(playlist['id'], track_ids)
+if track_ids:
+    client.add_tracks_to_playlist(playlist['id'], track_ids)
+    print(f"Created playlist with {len(track_ids)}/{len(song_list)} tracks")
+else:
+    print("No tracks found - playlist is empty")
+```
 ```
 
 ## 🎨 Cover Art Image Generation
@@ -352,7 +383,7 @@ art_gen.create_and_upload_cover(
 **📚 Complete Workflow:** [references/COVER_ART_LLM_GUIDE.md](references/COVER_ART_LLM_GUIDE.md) contains:
 - Step-by-step execution process
 - Genre-to-color mapping tables
-- Mood-to-color mapping tables  
+- Mood-to-color mapping tables
 - Energy level assessment (1-10)
 - Color psychology principles
 - Typography & accessibility rules
@@ -407,33 +438,41 @@ art_gen.create_and_upload_cover(
 from spotify_client import SpotifyClient
 from cover_art_generator import CoverArtGenerator
 
-# Initialize clients
+# STEP 1: Initialize both clients (use same credentials)
 client = SpotifyClient(client_id, client_secret, access_token)
 art_gen = CoverArtGenerator(client_id, client_secret, access_token)
 
-# 1. Create playlist
+# STEP 2: Get current user's ID (needed to create playlist)
 user_id = client.get_current_user()["id"]
+
+# STEP 3: Create a new playlist
 playlist = client.create_playlist(
-    user_id=user_id,
     name="Summer Rock Anthems",
     description="High-energy rock hits for summer",
-    public=True
+    public=True  # Make playlist visible to others
 )
+print(f"Created playlist: {playlist['name']} (ID: {playlist['id']})")
 
-# 2. Add tracks
+# STEP 4: Search for tracks and add to playlist
 rock_tracks = client.search_tracks("summer rock", limit=50)
 track_ids = [t['id'] for t in rock_tracks]
 client.add_tracks_to_playlist(playlist['id'], track_ids)
+print(f"Added {len(track_ids)} tracks")
 
-# 3. Add custom cover art (large text, rock colors)
+# STEP 5: Generate and upload custom cover art
+# Uses large text optimized for thumbnails + genre-appropriate colors
 art_gen.create_and_upload_cover(
     playlist_id=playlist['id'],
-    title="Summer Rock",
-    subtitle="2024 Anthems",
-    genre="rock"  # or theme="energetic" or artist="acdc"
+    title="Summer Rock",      # Main title (large text)
+    subtitle="2024 Anthems",  # Optional subtitle (smaller text)
+    genre="rock"              # Uses rock color scheme (red/black)
+    # Alternatives: theme="energetic" or artist="acdc" or custom colors
 )
+print(f"✓ Cover art uploaded")
 
-print(f"✓ Playlist created with cover art: {playlist['external_urls']['spotify']}")
+# STEP 6: Print playlist URL for user to view
+print(f"✓ Playlist ready: {playlist['external_urls']['spotify']}")
+```
 ```
 
 ### Cover Art Design Features
@@ -451,55 +490,69 @@ print(f"✓ Playlist created with cover art: {playlist['external_urls']['spotify
 ### Get Recommendations
 
 ```python
-# Get recommendations based on seed artists/tracks
+# Get AI-powered music recommendations based on seed artists/tracks/genres
 recommendations = client.get_recommendations(
-    seed_artists=["artist_id_1"],
-    seed_tracks=["track_id_1"],
-    limit=50
+    seed_artists=["artist_id_1"],  # Spotify IDs of artists
+    seed_tracks=["track_id_1"],    # Spotify IDs of tracks
+    limit=50                       # Number of recommendations to get
 )
+# Returns: List of recommended tracks similar to the seeds
 ```
 
 ### Access User Profile
 
 ```python
+# Get information about the current authenticated user
 profile = client.get_current_user()
-# Returns: user_id, display_name, email, followers, images, etc.
+# Returns: user_id, display_name, email, followers, images, country, etc.
+print(f"Logged in as: {profile['display_name']}")
+print(f"User ID: {profile['id']}")
 ```
 
 ### Get User's Top Items
 
 ```python
+# Get user's most played artists over different time periods
 top_artists = client.get_top_items(
     item_type="artists",
     limit=20,
-    time_range="medium_term"  # short_term, medium_term, long_term
+    time_range="medium_term"  # Options: short_term (~4 weeks), medium_term (~6 months), long_term (~years)
 )
+print(f"Top artist: {top_artists[0]['name']}")
 
+# Get user's most played tracks
 top_tracks = client.get_top_items(
     item_type="tracks",
     limit=20,
-    time_range="short_term"
+    time_range="short_term"  # Recent listening (last ~4 weeks)
 )
+print(f"Most played track: {top_tracks[0]['name']} by {top_tracks[0]['artists'][0]['name']}")
 ```
 
 ### Playback Control
 
 ```python
-# Start playback
+# STEP 1: Start playback of a playlist or album
 client.start_playback(
-    device_id="device_123",
-    context_uri="spotify:playlist:playlist_id",
-    offset=0
+    device_id="device_123",                      # Optional: specific device
+    context_uri="spotify:playlist:playlist_id",  # What to play (playlist/album/artist URI)
+    offset=0                                     # Optional: start at track 0
 )
 
-# Pause
+# STEP 2: Pause playback
 client.pause_playback(device_id="device_123")
 
-# Skip to next
+# STEP 3: Skip to next track
 client.next_track(device_id="device_123")
 
-# Get currently playing
+# STEP 4: Check what's currently playing
 current = client.get_currently_playing()
+if current and current.get('item'):
+    track = current['item']
+    print(f"Now playing: {track['name']} by {track['artists'][0]['name']}")
+else:
+    print("Nothing is currently playing")
+```
 ```
 
 ## Authentication & Credentials
