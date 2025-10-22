@@ -189,6 +189,49 @@ See [examples/README.md](examples/README.md) for detailed pattern comparison.
 
 ---
 
+## 🤝 Contributing
+
+We welcome contributions! Whether you're fixing bugs, improving docs, or creating new examples - your help makes this project better.
+
+### Quick Contribution Guide
+
+1. **🐛 Report bugs** - [Open an issue](https://github.com/fabioc-aloha/spotify-skill/issues/new?template=bug_report.yml)
+2. **💡 Suggest features** - [Request a feature](https://github.com/fabioc-aloha/spotify-skill/issues/new?template=feature_request.yml)
+3. **📖 Improve docs** - Fix typos, clarify instructions, add examples
+4. **🔧 Submit code** - Fork, code, test, and open a PR
+5. **🎨 Share skills** - Add your example skill to `examples/`
+
+### Getting Started
+
+```bash
+# Fork and clone
+git clone https://github.com/YOUR-USERNAME/spotify-skill.git
+cd spotify-skill
+
+# Set up environment
+python -m venv .venv
+.venv\Scripts\activate  # Windows
+pip install -r spotify-api/requirements.txt
+
+# Make changes and validate
+python tools/validate_skill.py ./spotify-api
+
+# Open PR!
+```
+
+**Full guidelines**: [CONTRIBUTING.md](CONTRIBUTING.md)
+
+### Priority Areas
+
+- 🐛 [Bug fixes](https://github.com/fabioc-aloha/spotify-skill/labels/bug)
+- 📖 Documentation improvements
+- 🎨 New example skill patterns
+- ✨ Feature enhancements
+
+**Join the discussion**: [GitHub Discussions](https://github.com/fabioc-aloha/spotify-skill/discussions)
+
+---
+
 ## 🛠️ Tools
 
 ### Automated Development Utilities
