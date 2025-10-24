@@ -71,7 +71,7 @@
       "post": {
         "operationId": "createPlaylist",
         "summary": "Create a playlist",
-        "description": "Create a new playlist for the current user. Returns the playlist object including the playlist_id needed for adding tracks. IMPORTANT: Save the returned playlist_id to add tracks in the next step.",
+        "description": "Create a new playlist for the current user. USE SENSIBLE DEFAULTS: Set public=true unless user explicitly requests private. Auto-generate description based on theme/genre. Returns the playlist object including playlist_id needed for adding tracks. Save the playlist_id to add tracks immediately after creation.",
         "requestBody": {
           "required": true,
           "content": {
@@ -359,7 +359,7 @@
       "get": {
         "operationId": "search",
         "summary": "Search for items",
-        "description": "Search Spotify for tracks, artists, albums, or playlists. Returns results with IDs that can be converted to URIs (spotify:track:{id}). Max 50 results per request. Use offset for pagination.",
+        "description": "Search Spotify for tracks, artists, albums, or playlists. Returns results with IDs that can be converted to URIs (spotify:track:{id}). Default to 20-30 results unless user specifies otherwise. Use offset for pagination if needed.",
         "parameters": [
           {
             "name": "q",
