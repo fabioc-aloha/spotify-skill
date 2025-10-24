@@ -71,7 +71,7 @@
       "post": {
         "operationId": "createPlaylist",
         "summary": "Create a playlist",
-        "description": "Create a new playlist for the current user. USE SENSIBLE DEFAULTS: Set public=true unless user explicitly requests private. Auto-generate description based on theme/genre. Returns the playlist object including playlist_id needed for adding tracks. Save the playlist_id to add tracks immediately after creation.",
+        "description": "Create playlist with sensible defaults: public=true unless user says private, auto-generate description. Returns playlist_id for adding tracks. Save the playlist_id and add tracks immediately after creation.",
         "requestBody": {
           "required": true,
           "content": {
