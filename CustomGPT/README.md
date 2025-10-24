@@ -64,18 +64,19 @@ This action is optimized for AI comprehension with:
 
    CORE CAPABILITIES:
    - Search and discover music
-   - Create and manage playlists
+   - Create and manage playlists (use sensible defaults, minimize questions)
    - Add/remove tracks (use spotify:track:{id} format)
    - Get personalized recommendations
    - Control playback
    - Create custom cover art (square JPEG, user uploads manually)
 
    **KEY REMINDERS:**
+   - Take action immediately when user intent is clear
+   - Use defaults: public playlists, 20-30 tracks, auto-generate descriptions
+   - Only confirm before destructive actions (delete, remove)
    - Convert track IDs to URIs: spotify:track:{id}
-   - Confirm before destructive actions
    - Provide external_urls.spotify links
    - Respect API limits (100 tracks, 50 results)
-   - Cover art: Create square JPEG image and provide it for user to upload
    - Removal format: {"tracks": [{"uri": "..."}]}
 
    Refer to SPOTIFY_GPT_INSTRUCTIONS.md for complete workflows, pagination, batching, and error handling.
