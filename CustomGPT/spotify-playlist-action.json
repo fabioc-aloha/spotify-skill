@@ -1,0 +1,643 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Spotify Web API for Custom GPT",
+    "description": "Direct integration with Spotify Web API for playlist management, music search, and playback control",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.spotify.com/v1",
+      "description": "Spotify Web API"
+    }
+  ],
+  "paths": {
+    "/me": {
+      "get": {
+        "operationId": "getCurrentUser",
+        "summary": "Get current user profile",
+        "description": "Get detailed profile information about the current user",
+        "responses": {
+          "200": {
+            "description": "User profile information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {"type": "string"},
+                    "display_name": {"type": "string"},
+                    "email": {"type": "string"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/me/playlists": {
+      "get": {
+        "operationId": "getCurrentUserPlaylists",
+        "summary": "Get current user's playlists",
+        "description": "Get a list of the playlists owned or followed by the current user. PAGINATION: Maximum 50 items per request. For more results, increment offset by limit value (e.g., offset=0, then offset=50, offset=100). Check if response has 'next' field to determine if more pages exist.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "maximum": 50
+            },
+            "description": "Maximum number of playlists to return (1-50)"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 0
+            },
+            "description": "Index of first playlist to return. Use for pagination (0, 50, 100, etc.)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of playlists"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createPlaylist",
+        "summary": "Create a playlist",
+        "description": "Create a new playlist for the current user. Returns the playlist object including the playlist_id needed for adding tracks. IMPORTANT: Save the returned playlist_id to add tracks in the next step.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Name of the playlist"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Playlist description"
+                  },
+                  "public": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "If true, playlist will be public"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Playlist created"
+          }
+        }
+      }
+    },
+    "/playlists/{playlist_id}": {
+      "get": {
+        "operationId": "getPlaylist",
+        "summary": "Get playlist",
+        "description": "Get a playlist owned by a Spotify user",
+        "parameters": [
+          {
+            "name": "playlist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Playlist details"
+          }
+        }
+      },
+      "put": {
+        "operationId": "updatePlaylist",
+        "summary": "Update playlist",
+        "description": "Change a playlist's name and public/private state",
+        "parameters": [
+          {
+            "name": "playlist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "public": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Playlist updated"
+          }
+        }
+      }
+    },
+    "/playlists/{playlist_id}/followers": {
+      "delete": {
+        "operationId": "unfollowPlaylist",
+        "summary": "Unfollow playlist",
+        "description": "Unfollow (remove) a playlist from the user's library. For playlists owned by the user, this effectively deletes the playlist. CRITICAL: ALWAYS confirm with user before executing this action as it cannot be undone.",
+        "parameters": [
+          {
+            "name": "playlist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Playlist unfollowed"
+          }
+        }
+      }
+    },
+    "/playlists/{playlist_id}/images": {
+      "put": {
+        "operationId": "uploadPlaylistCoverImage",
+        "summary": "Upload playlist cover image",
+        "description": "ADVANCED: Replace playlist cover with custom image via API. RECOMMENDED WORKFLOW: Generate cover art and provide to user for manual upload instead. API Requirements if used: Square JPEG (equal width/height), Base64 encoded, max 256KB, remove 'data:image/jpeg;base64,' prefix.",
+        "parameters": [
+          {
+            "name": "playlist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "text/plain": {
+              "schema": {
+                "type": "string",
+                "description": "Base64 encoded JPEG image data (without 'data:image/jpeg;base64,' prefix). Image must be square (equal width and height)."
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Image uploaded successfully"
+          }
+        }
+      }
+    },
+    "/playlists/{playlist_id}/tracks": {
+      "get": {
+        "operationId": "getPlaylistTracks",
+        "summary": "Get playlist tracks",
+        "description": "Get full details of the tracks in a playlist. PAGINATION: Maximum 100 items per request. For playlists with more tracks, use offset parameter. Increment offset by limit (e.g., offset=0, then offset=100, offset=200). Check response 'next' field for more pages.",
+        "parameters": [
+          {
+            "name": "playlist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "maximum": 100
+            },
+            "description": "Maximum number of tracks to return (1-100)"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 0
+            },
+            "description": "Index of first track to return. Use for pagination (0, 100, 200, etc.)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of tracks"
+          }
+        }
+      },
+      "post": {
+        "operationId": "addTracksToPlaylist",
+        "summary": "Add tracks to playlist",
+        "description": "Add tracks to a playlist using Spotify URIs (spotify:track:{id}). Max 100 tracks per request. Extract track IDs from search results and convert to URI format before adding.",
+        "parameters": [
+          {
+            "name": "playlist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["uris"],
+                "properties": {
+                  "uris": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Array of Spotify URIs to add. Maximum 100 tracks per request. (e.g., [\"spotify:track:4iV5W9uYEdYUVa79Axb7Rh\"])",
+                    "maxItems": 100
+                  },
+                  "position": {
+                    "type": "integer",
+                    "description": "Position to insert tracks (optional)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tracks added"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "removeTracksFromPlaylist",
+        "summary": "Remove tracks from playlist",
+        "description": "Remove tracks from a playlist. Each track must be an object with 'uri' property (spotify:track:{id}). Max 100 per request. ALWAYS confirm with user before removing.",
+        "parameters": [
+          {
+            "name": "playlist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["tracks"],
+                "properties": {
+                  "tracks": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "uri": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "description": "Array of track objects to remove. Maximum 100 tracks per request.",
+                    "maxItems": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tracks removed"
+          }
+        }
+      }
+    },
+    "/search": {
+      "get": {
+        "operationId": "search",
+        "summary": "Search for items",
+        "description": "Search Spotify for tracks, artists, albums, or playlists. Returns results with IDs that can be converted to URIs (spotify:track:{id}). Max 50 results per request. Use offset for pagination.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Search query keywords"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Comma-separated list of item types to search (track, artist, album, playlist)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "maximum": 50
+            },
+            "description": "Maximum number of results to return per type (1-50)"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 0
+            },
+            "description": "Index of first result to return. Use for pagination (0, 50, 100, etc.)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search results"
+          }
+        }
+      }
+    },
+    "/artists/{id}": {
+      "get": {
+        "operationId": "getArtist",
+        "summary": "Get artist",
+        "description": "Get Spotify catalog information for a single artist",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Artist information"
+          }
+        }
+      }
+    },
+    "/artists/{id}/top-tracks": {
+      "get": {
+        "operationId": "getArtistTopTracks",
+        "summary": "Get artist's top tracks",
+        "description": "Get an artist's top tracks by country",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "market",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "US"
+            },
+            "description": "ISO 3166-1 alpha-2 country code"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Artist's top tracks"
+          }
+        }
+      }
+    },
+    "/recommendations": {
+      "get": {
+        "operationId": "getRecommendations",
+        "summary": "Get recommendations",
+        "description": "Get personalized track recommendations. Requires 1-5 seeds total (artists, tracks, or genres combined). Max 100 recommendations per request. Returns tracks with IDs for adding to playlists.",
+        "parameters": [
+          {
+            "name": "seed_artists",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Comma-separated list of artist IDs (max 5 combined with other seeds)"
+          },
+          {
+            "name": "seed_tracks",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Comma-separated list of track IDs (max 5 combined with other seeds)"
+          },
+          {
+            "name": "seed_genres",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Comma-separated list of genres (max 5 combined with other seeds)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "maximum": 100
+            },
+            "description": "Number of recommendations to return (1-100)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recommended tracks"
+          }
+        }
+      }
+    },
+    "/me/player": {
+      "get": {
+        "operationId": "getPlaybackState",
+        "summary": "Get playback state",
+        "description": "Get information about the user's current playback",
+        "responses": {
+          "200": {
+            "description": "Playback state"
+          }
+        }
+      }
+    },
+    "/me/player/play": {
+      "put": {
+        "operationId": "startPlayback",
+        "summary": "Start/resume playback",
+        "description": "Start playback on user's active device or resume paused playback. Provide EITHER context_uri (for album/artist/playlist) OR uris array (for specific tracks). Use Spotify URI format: spotify:track:{id}, spotify:album:{id}, spotify:playlist:{id}. Requires an active Spotify device.",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "context_uri": {
+                    "type": "string",
+                    "description": "Spotify URI of the context (album, artist, playlist)"
+                  },
+                  "uris": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Array of track URIs to play"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Playback started"
+          }
+        }
+      }
+    },
+    "/me/player/pause": {
+      "put": {
+        "operationId": "pausePlayback",
+        "summary": "Pause playback",
+        "description": "Pause playback on the user's account",
+        "responses": {
+          "204": {
+            "description": "Playback paused"
+          }
+        }
+      }
+    },
+    "/me/player/next": {
+      "post": {
+        "operationId": "skipToNext",
+        "summary": "Skip to next",
+        "description": "Skip to the next track",
+        "responses": {
+          "204": {
+            "description": "Skipped to next"
+          }
+        }
+      }
+    },
+    "/me/player/previous": {
+      "post": {
+        "operationId": "skipToPrevious",
+        "summary": "Skip to previous",
+        "description": "Skip to the previous track",
+        "responses": {
+          "204": {
+            "description": "Skipped to previous"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {},
+    "securitySchemes": {
+      "oauth2": {
+        "type": "oauth2",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://accounts.spotify.com/authorize",
+            "tokenUrl": "https://accounts.spotify.com/api/token",
+            "scopes": {
+              "user-read-private": "Read access to user's private data",
+              "user-read-email": "Read access to user's email address",
+              "playlist-read-private": "Read access to user's private playlists",
+              "playlist-read-collaborative": "Include collaborative playlists when requesting a user's playlists",
+              "playlist-modify-public": "Write access to user's public playlists",
+              "playlist-modify-private": "Write access to user's private playlists",
+              "user-library-read": "Read access to user's library",
+              "user-library-modify": "Write/delete access to user's library",
+              "user-top-read": "Read access to user's top artists and tracks",
+              "user-read-playback-state": "Read access to user's playback state",
+              "user-modify-playback-state": "Write access to user's playback state",
+              "user-read-currently-playing": "Read access to user's currently playing content",
+              "user-read-recently-played": "Read access to user's recently played tracks",
+              "ugc-image-upload": "Upload images to Spotify (for playlist cover art)"
+            }
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "oauth2": [
+        "user-read-private",
+        "user-read-email",
+        "playlist-read-private",
+        "playlist-read-collaborative",
+        "playlist-modify-public",
+        "playlist-modify-private",
+        "user-library-read",
+        "user-top-read",
+        "user-read-playback-state",
+        "user-modify-playback-state",
+        "user-read-currently-playing",
+        "ugc-image-upload"
+      ]
+    }
+  ]
+}
