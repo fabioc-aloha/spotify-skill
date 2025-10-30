@@ -375,7 +375,7 @@
       "put": {
         "operationId": "uploadPlaylistCoverImage",
         "summary": "Upload playlist cover image",
-        "description": "Upload custom cover art to playlist. CRITICAL FORMAT: 1) Request body MUST be raw base64 string (no JSON wrapper, no quotes), 2) Content-Type MUST be image/jpeg, 3) Remove 'data:image/jpeg;base64,' prefix if present, 4) Image must be square JPEG (min 640x640px, equal width/height), 5) Max 256KB. User must have ugc-image-upload scope.",
+        "description": "Upload cover art. CRITICAL: Raw base64 string (no JSON/quotes), Content-Type: image/jpeg, remove 'data:image/jpeg;base64,' prefix, square JPEG 640x640px min, max 256KB. Requires ugc-image-upload scope. See requestBody for format details.",
         "parameters": [
           {
             "name": "playlist_id",
@@ -676,7 +676,7 @@
       "get": {
         "operationId": "getAudioFeatures",
         "summary": "Get audio features for a track",
-        "description": "Get detailed audio analysis for a track including danceability, energy, valence (positivity), acousticness, instrumentalness, tempo (BPM), key, mode, and more. Use to filter tracks by mood, energy level, or activity suitability. Values are 0.0-1.0 except tempo (BPM) and key (0-11). REQUIRES: user-read-private scope. If 403 error occurs, user must re-authenticate.",
+        "description": "Get audio analysis: danceability, energy, valence, acousticness, instrumentalness, tempo (BPM), key, mode. Values 0.0-1.0 except tempo/key. Use for mood/energy filtering. REQUIRES user-read-private scope. 403 error = re-authenticate.",
         "parameters": [
           {
             "name": "id",
