@@ -165,16 +165,17 @@ What does the user want to do?
      - Second request: `limit=50`, `offset=50`
      - Check `next` field in response to see if more pages exist
 
-2. **Search for tracks**
+2. **Search for tracks (Use small batches)**
    - Operation: `search`
    - Parameters:
      - `q="artist name song title"` or `q="genre mood"`
      - `type="track"`
-     - `limit=20` (or up to 50)
+     - `limit=10-15` ⚠️ **Keep small to avoid response size errors**
    - **Pagination**: If need more results, use `offset`
-     - First: `offset=0`
-     - Second: `offset=50`
-     - Third: `offset=100`
+     - First: `offset=0, limit=15`
+     - Second: `offset=15, limit=15`
+     - Third: `offset=30, limit=15`
+   - Check `next` field to determine if more results exist
 
 3. **Convert track IDs to URIs**
    - Extract `id` from each track in search results
@@ -197,10 +198,12 @@ What does the user want to do?
 1. **Get current playlist tracks**
    - Operation: `getPlaylistTracks`
    - Parameters: `playlist_id`, `limit=100`, `offset=0`
-   - **Pagination**: If playlist has 250 tracks:
-     - Request 1: `offset=0` (tracks 1-100)
-     - Request 2: `offset=100` (tracks 101-200)
-     - Request 3: `offset=200` (tracks 201-250)
+   - **PAGINATION REQUIRED** if playlist has >100 tracks:
+     - Request 1: `offset=0, limit=100` (tracks 1-100)
+     - Check `next` field in response
+     - Request 2: `offset=100, limit=100` (tracks 101-200)
+     - Request 3: `offset=200, limit=100` (tracks 201-300)
+     - Continue until `next` is null
 
 2. **Identify tracks to remove**
    - User specifies track names or positions
@@ -267,6 +270,7 @@ What does the user want to do?
 1. **Get user's listening preferences**
    - Operation: `getUserTopArtists` with `time_range="medium_term"` (6 months)
    - Operation: `getUserTopTracks` with `time_range="short_term"` (4 weeks)
+   - **Pagination**: If requesting >50 items, increment offset (0, 50, 100...)
    - Extract artist IDs and genres from results
 
 2. **Get top tracks from user's favorite artists**
@@ -276,8 +280,9 @@ What does the user want to do?
 
 3. **Add variety with genre searches**
    - Extract genres from top artists
-   - Search: `search?q=genre:{genre_name}&type=track&limit=10`
-   - Example: `q=genre:indie rock energy&type=track`
+   - Search: `search?q=genre:{genre_name}&type=track&limit=10-15`
+   - Example: `q=genre:indie rock energy&type=track&limit=10`
+   - **Keep searches small** to avoid response size errors
 
 4. **Create playlist and add tracks**
    - Deduplicate tracks by ID
@@ -288,6 +293,7 @@ What does the user want to do?
 
 1. **Get recent listening history**
    - Operation: `getRecentlyPlayedTracks` with `limit=50`
+   - **Note**: Recently played has max 50 tracks (no pagination)
    - Extract artist IDs and track features
 
 2. **Find similar tracks via search**
@@ -308,9 +314,10 @@ What does the user want to do?
 
 2. **Build intelligent search query**
    - Combine keywords with genre/year filters
-   - Example: `q=workout energy high tempo genre:electronic&type=track`
-   - Example: `q=chill study ambient year:2020-2024&type=track`
-   - Use `limit=30-50` for variety
+   - Example: `q=workout energy high tempo genre:electronic&type=track&limit=15`
+   - Example: `q=chill study ambient year:2020-2024&type=track&limit=15`
+   - **CRITICAL**: Use `limit=10-15` to avoid response size errors
+   - For more variety, make multiple focused searches
 
 3. **Enhance with user's top items**
    - Get user's top tracks in similar genre
