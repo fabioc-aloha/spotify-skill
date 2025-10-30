@@ -40,7 +40,7 @@
       "get": {
         "operationId": "getCurrentUserPlaylists",
         "summary": "Get current user's playlists",
-        "description": "Get a list of the playlists owned or followed by the current user. PAGINATION REQUIRED: If user has >50 playlists, you MUST paginate. Step 1: Request with offset=0, limit=50. Step 2: Check response for 'next' field. Step 3: If 'next' exists, make another request with offset=50. Step 4: Repeat incrementing offset by 50 until 'next' is null.",
+        "description": "Get playlists owned or followed by user. PAGINATION REQUIRED if >50 playlists: offset=0,limit=50 → check 'next' field → if exists, offset=50 → repeat incrementing offset by 50 until 'next' is null.",
         "parameters": [
           {
             "name": "limit",
@@ -540,7 +540,7 @@
       "get": {
         "operationId": "search",
         "summary": "Search for items",
-        "description": "Search Spotify for tracks, artists, albums, or playlists. CRITICAL: Use limit=10-15 to avoid response size errors. PAGINATION: For more results beyond limit, increment offset (e.g., offset=0, then offset=15, offset=30). Check 'next' field to determine if more results exist. For more tracks, make multiple focused searches with different keywords rather than one large search.",
+        "description": "Search Spotify for tracks, artists, albums, or playlists. CRITICAL: Use limit=10-15 to avoid response size errors. For pagination: increment offset (0→15→30) and check 'next' field. For variety: make multiple focused searches with different keywords.",
         "parameters": [
           {
             "name": "q",
