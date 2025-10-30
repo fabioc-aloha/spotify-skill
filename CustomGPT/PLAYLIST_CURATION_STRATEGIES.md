@@ -46,14 +46,18 @@ User tells the GPT what they want (e.g., "Create a 70s rock playlist"), and the 
 - Document why each track matters
 - Design intentional flow and transitions
 - Build emotional arcs and peak moments
+- **Work in batches**: Plan all → Search all → Add all
 
 **How it works:**
 User describes their vision (e.g., "Create an emotional journey from dawn to dusk"), and the GPT:
-1. Curates specific tracks based on artistic criteria
-2. Creates the playlist via `createPlaylist` API
-3. Searches for and adds each curated track via `search` and `addTracksToPlaylist` APIs
-4. Provides curatorial notes explaining each choice
-5. Generates thematic cover art via `uploadPlaylistCoverImage` API
+1. **Plans** complete track list with curatorial reasoning for each track
+2. **Creates** the playlist via `createPlaylist` API
+3. **Searches** for ALL curated tracks consecutively via `search` API
+4. **Adds ALL tracks in one batch** via `addTracksToPlaylist` API (up to 100 URIs)
+5. **Provides** curatorial notes explaining each choice
+6. **Generates** thematic cover art via `uploadPlaylistCoverImage` API
+
+**⚠️ CRITICAL**: Never add tracks one-at-a-time in curated mode. Plan the complete journey, then execute in batch operations.
 
 ---
 
@@ -319,34 +323,52 @@ Result: 202 Accepted (async processing)
    - Description: "A carefully crafted emotional journey from quiet awakening through afternoon energy to evening reflection"
    - Public: false
 
-3. **Curate & Search for Specific Tracks**
-
+3. **Plan Complete Track List FIRST** (Do NOT search yet)
+   
    **Phase 1: Awakening**
-   - Search: `q=River Man artist:Nick Drake&type=track&limit=1`
-   - Search: `q=Fade Into You artist:Mazzy Star&type=track&limit=1`
-   - Search: `q=Hoppípolla artist:Sigur Rós&type=track&limit=1`
+   - Nick Drake - "River Man" (*Five Leaves Left*, 1969)
+   - Mazzy Star - "Fade Into You" (*So Tonight That I Might See*, 1993)
+   - Sigur Rós - "Hoppípolla" (*Takk...*, 2005)
    - **Curatorial Notes**: "Opening with Nick Drake's orchestral folk creates dawn light atmosphere. Mazzy Star adds dreamy motion. Sigur Rós brings gradual joy."
 
    **Phase 2: Midday Energy**
-   - Search: `q=15 Step artist:Radiohead album:In Rainbows&type=track&limit=1`
-   - Search: `q=Wake Up artist:Arcade Fire album:Funeral&type=track&limit=1`
+   - Radiohead - "15 Step" (*In Rainbows*, 2007)
+   - Arcade Fire - "Wake Up" (*Funeral*, 2004)
    - **Curatorial Notes**: "Propulsive Radiohead represents active striving. Arcade Fire provides anthemic peak moment."
 
    **Phase 3: Evening Reflection**
-   - Search: `q=Holocene artist:Bon Iver&type=track&limit=1`
+   - Bon Iver - "Holocene" (*Bon Iver, Bon Iver*, 2011)
    - **Curatorial Notes**: "Bon Iver brings us back to stillness with earned wisdom - perfect closing meditation."
 
-4. **Add Tracks**
-   - Add each track via `addTracksToPlaylist` preserving curated order
+4. **Search for ALL Tracks in Batch** (Do NOT add yet)
+   - Search 1: `q=River Man artist:Nick Drake&type=track&limit=1` → Extract track ID
+   - Search 2: `q=Fade Into You artist:Mazzy Star&type=track&limit=1` → Extract track ID
+   - Search 3: `q=Hoppípolla artist:Sigur Rós&type=track&limit=1` → Extract track ID
+   - Search 4: `q=15 Step artist:Radiohead album:In Rainbows&type=track&limit=1` → Extract track ID
+   - Search 5: `q=Wake Up artist:Arcade Fire album:Funeral&type=track&limit=1` → Extract track ID
+   - Search 6: `q=Holocene artist:Bon Iver&type=track&limit=1` → Extract track ID
+   
+5. **Add ALL Tracks in Single Batch Operation**
+   - Convert all track IDs to URIs: `["spotify:track:{id1}", "spotify:track:{id2}", ...]`
+   - Call `addTracksToPlaylist` ONCE with all 6 URIs in order
+   - **CRITICAL**: Do NOT add tracks one at a time
+   - Order in URIs array = playback order (preserves curatorial sequence)
 
-5. **Explain to User**
+6. **Explain to User**
    - Present the playlist with curatorial vision
    - Explain why each track was chosen and how they connect
    - "This playlist maps the emotional topology of a single day..."
 
-6. **Generate Cover Art**
+7. **Generate Cover Art**
    - Theme: Dawn to dusk gradient, emotional journey
    - Upload via `uploadPlaylistCoverImage`
+
+**⚠️ IMPORTANT - Curated Mode Workflow:**
+- Step 1: Plan ALL tracks with reasoning
+- Step 2: Search for ALL tracks
+- Step 3: Add ALL tracks in ONE batch operation
+- **Never add tracks one-by-one** - this disrupts the creative flow
+- **Never ask for confirmation after each track** - work autonomously with the plan
 
 ---
 
