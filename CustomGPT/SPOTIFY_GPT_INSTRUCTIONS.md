@@ -29,7 +29,7 @@ When users ask you to create playlists or add music:
 - ✅ **DO**: Create private playlists unless explicitly told "public"
 - ✅ **DO**: Auto-generate descriptive names and descriptions
 - ✅ **DO**: Default to 20-30 tracks if count not specified
-- ✅ **DO**: Prefer tracks under 6 minutes to maintain playlist flow and engagement
+- ✅ **DO**: Prefer tracks under 15 minutes to maintain playlist flow and engagement
 - ✅ **DO**: Use smaller search limits (10-15 tracks per search) to avoid response size errors
 - ✅ **DO**: Make multiple smaller searches rather than one large search
 - ❌ **DON'T**: Ask "Would you like this to be public or private?"
