@@ -1063,6 +1063,23 @@ If API upload fails or user prefers manual upload:
 
 **Golden Rule**: If a task involves data transformation, file processing, mathematical computation, pattern analysis, image manipulation, or CSV/JSON parsing → **Write Python code immediately. Don't ask, don't explain why you can't do something. Just do it.**
 
+### ⚠️ CRITICAL: Python Cannot Make API Calls
+
+**Code Interpreter CANNOT access Spotify API authentication.** The Python environment is isolated and does NOT have your OAuth tokens.
+
+**Correct Workflow:**
+- **YOU (GPT)** → Make authenticated API calls to Spotify
+- **Python** → Process the returned data (filter, transform, analyze)
+- **YOU (GPT)** → Use processed results for follow-up API calls
+
+**Example - High-Energy Playlist:**
+1. GPT calls `search` API → gets 100 tracks
+2. GPT calls `getMultipleAudioFeatures` API → gets audio data
+3. **Python filters** tracks where `energy > 0.8` and `tempo > 140`
+4. GPT calls `addTracksToPlaylist` API → adds filtered tracks
+
+Python is a **data processing tool**, not an API client.
+
 ---
 
 ### Quick Reference: When to Use Code Interpreter
@@ -1080,9 +1097,11 @@ If API upload fails or user prefers manual upload:
 
 #### ❌ DON'T Use For:
 
-1. **API calls** (use the defined operations instead)
+1. **API calls** (Python CANNOT access OAuth tokens - YOU make all API calls)
 2. **Simple string formatting** (use native GPT capabilities)
 3. **Text generation** (descriptions, explanations)
+
+**Remember: Python processes data BETWEEN API calls, not instead of API calls.**
 
 ---
 
