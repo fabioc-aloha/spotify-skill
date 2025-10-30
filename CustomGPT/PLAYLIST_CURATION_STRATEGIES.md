@@ -2,101 +2,76 @@
 
 ## Overview
 
-This guide outlines sophisticated playlist curation approaches for the **Spotify Custom GPT**. When users interact with you conversationally, you'll use these strategies to create playlists through the Spotify Web API. Two distinct modes enable different creative approaches: **Search-Based** for algorithmic discovery and **Curated** for hand-picked artistic journeys.
+This guide outlines a **search-first, fast-execution** approach for playlist creation. The key principle: **Trust Spotify's search algorithm** - it's excellent at finding relevant tracks. Minimize interactions, maximize results.
 
-**Integration**: These strategies work through natural conversation with the Custom GPT, which then executes the appropriate API calls to create playlists on Spotify.
-
----
-
-## 🎯 Two Curation Modes
-
-### 🔍 Search-Based Mode (Discovery & Algorithmic)
-
-**Best For:**
-- Genre exploration and discovery
-- Artist catalog deep dives
-- Large collections (90+ minutes)
-- Thematic playlists with variety
-
-**Approach:**
-- Use Spotify search API queries to find tracks
-- Leverage advanced search operators (artist:, year:, genre:, album:)
-- Apply track type filters (live, studio, acoustic, covers, remix)
-- Organize by phases with duration targets
-
-**How it works:**
-User tells the GPT what they want (e.g., "Create a 70s rock playlist"), and the GPT:
-1. Creates the playlist via `createPlaylist` API
-2. Executes optimized search queries via `search` API
-3. Adds discovered tracks via `addTracksToPlaylist` API
-4. Generates and uploads cover art via `uploadPlaylistCoverImage` API
+**Philosophy**: Make 3-5 focused searches → Combine results → Add in one batch → Done in seconds
 
 ---
 
-### 🎭 Curated Mode (Hand-Picked & Artistic)
+## 🚀 Primary Mode: Search-Driven (Fast & Reliable)
 
-**Best For:**
-- Specific artistic vision
-- Emotional narrative journeys
-- Premium listening experiences
-- Showcasing cultural significance
+**Why Search-First:**
+- Spotify's relevance algorithm is better than manual curation
+- Multiple focused searches provide natural variety
+- Fast: User gets playlist in 10-15 seconds
+- Less error-prone than complex multi-step workflows
+- Scales easily (want 50 tracks? Just make 5 searches)
 
-**Approach:**
-- Specify exact tracks with curatorial reasoning
-- Document why each track matters
-- Design intentional flow and transitions
-- Build emotional arcs and peak moments
-- **Work in batches**: Plan all → Search all → Add all
+**Core Workflow:**
+1. **Create playlist** (1 API call)
+2. **Make 3-5 focused searches** (3-5 API calls, limit=10-15 each)
+3. **Optional: Add 2-3 user favorites** for personalization (1 API call)
+4. **Combine & add ALL tracks in ONE batch** (1 API call)
+5. **Offer cover art** (optional)
 
-**How it works:**
-User describes their vision (e.g., "Create an emotional journey from dawn to dusk"), and the GPT:
-1. **Plans** complete track list with curatorial reasoning for each track
-2. **Creates** the playlist via `createPlaylist` API
-3. **Searches** for ALL curated tracks consecutively via `search` API
-4. **Adds ALL tracks in one batch** via `addTracksToPlaylist` API (up to 100 URIs)
-5. **Provides** curatorial notes explaining each choice
-6. **Generates** thematic cover art via `uploadPlaylistCoverImage` API
-
-**⚠️ CRITICAL**: Never add tracks one-at-a-time in curated mode. Plan the complete journey, then execute in batch operations.
+**Total: 5-7 API calls, 10-15 seconds, done.**
 
 ---
 
-## 🎵 Search-Based Mode: Best Practices
+## � Search Query Strategies
 
-### Search Query Strategies
+**Effective Search Patterns:**
 
-**When users request playlists, translate their intent into effective Spotify API search queries:**
-
-**Simple Artist/Era Queries:**
+**Simple & Effective:**
 ```
-User: "Create a KISS playlist from the 70s"
-API Query: artist:KISS year:1973-1979
-```
-
-**Album-Based Discovery:**
-```
-User: "Add tracks from Physical Graffiti"
-API Query: album:Physical Graffiti artist:Led Zeppelin
-```
-*Note: Do NOT use quotes around album names in API queries*
-
-**Exclude Unwanted Content:**
-```
-User: "Beatles originals only, no covers"
-API Query: artist:Beatles -cover -tribute -remix
+User: "Create a workout playlist"
+Searches:
+1. "workout 2020s high energy" (limit=15)
+2. "gym motivation electronic" (limit=15)
+3. "running pop upbeat" (limit=10)
+→ 40 tracks, done in 3 searches
 ```
 
-**Genre + Era Exploration:**
+**Genre + Era + Mood:**
 ```
-User: "70s rock without compilations"
-API Query: genre:rock year:1970-1979 -compilation
+User: "70s rock classics"
+Searches:
+1. "rock year:1970-1974 classic" (limit=15)
+2. "rock year:1975-1979 hits" (limit=15)
+3. artist:Led Zeppelin OR artist:Pink Floyd (limit=10)
+→ 40 tracks, covers decade
 ```
 
-**Mood-Based Discovery:**
+**Artist-Focused:**
 ```
-User: "Recent chill ambient music"
-API Query: chill ambient electronic year:2020-2024
+User: "KISS 70s playlist"
+Searches:
+1. artist:KISS year:1973-1976 (limit=15)
+2. artist:KISS year:1977-1979 (limit=15)
+→ 30 tracks, chronological
 ```
+
+**Mood-Based:**
+```
+User: "Chill evening vibes"
+Searches:
+1. "chill electronic ambient" (limit=12)
+2. "lo-fi study relax" (limit=12)
+3. "downtempo chill hop" (limit=12)
+→ 36 tracks, cohesive mood
+```
+
+**Advanced Operators:**
 
 ### Track Type Preferences
 
