@@ -371,47 +371,6 @@
         }
       }
     },
-    "/playlists/{playlist_id}/images": {
-      "put": {
-        "operationId": "uploadPlaylistCoverImage",
-        "summary": "Upload playlist cover image",
-        "description": "Upload cover art. CRITICAL: Raw base64 string (no JSON/quotes), Content-Type: image/jpeg, remove 'data:image/jpeg;base64,' prefix, square JPEG 640x640px min, max 256KB. Requires ugc-image-upload scope. See requestBody for format details.",
-        "parameters": [
-          {
-            "name": "playlist_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "The Spotify ID of the playlist to add cover art to"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "image/jpeg": {
-              "schema": {
-                "type": "string",
-                "format": "byte",
-                "description": "CRITICAL: Send as RAW base64 string in request body (NOT as JSON object, NOT wrapped in quotes). Example body: /9j/4AAQSkZJRgABAQEAYABgAAD... (just the base64 string, nothing else). Must NOT include 'data:image/jpeg;base64,' prefix."
-              }
-            }
-          }
-        },
-        "responses": {
-          "202": {
-            "description": "Image uploaded successfully. Cover art will appear on the playlist within a few minutes."
-          },
-          "401": {
-            "description": "Missing ugc-image-upload scope. User must re-authenticate with this scope enabled."
-          },
-          "400": {
-            "description": "Invalid image format. Ensure image is square JPEG, under 256KB, and properly base64 encoded."
-          }
-        }
-      }
-    },
     "/playlists/{playlist_id}/tracks": {
       "get": {
         "operationId": "getPlaylistTracks",
@@ -877,8 +836,7 @@
               "user-read-playback-state": "Read access to user's playback state",
               "user-modify-playback-state": "Write access to user's playback state",
               "user-read-currently-playing": "Read access to user's currently playing content",
-              "user-read-recently-played": "Read access to user's recently played tracks",
-              "ugc-image-upload": "Upload images to Spotify (for playlist cover art)"
+              "user-read-recently-played": "Read access to user's recently played tracks"
             }
           }
         }
@@ -900,8 +858,7 @@
         "user-read-playback-state",
         "user-modify-playback-state",
         "user-read-currently-playing",
-        "user-read-recently-played",
-        "ugc-image-upload"
+        "user-read-recently-played"
       ]
     }
   ]
