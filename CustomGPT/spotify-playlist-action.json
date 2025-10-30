@@ -40,7 +40,7 @@
       "get": {
         "operationId": "getCurrentUserPlaylists",
         "summary": "Get current user's playlists",
-        "description": "Get playlists owned or followed by user. PAGINATION REQUIRED if >50 playlists: offset=0,limit=50 → check 'next' field → if exists, offset=50 → repeat incrementing offset by 50 until 'next' is null.",
+        "description": "Get playlists owned or followed by user. PAGINATION REQUIRED if >20 playlists: offset=0,limit=20 → check 'next' field → if exists, offset=20 → repeat incrementing offset by 20 until 'next' is null.",
         "parameters": [
           {
             "name": "limit",
@@ -59,7 +59,7 @@
               "type": "integer",
               "default": 0
             },
-            "description": "Index of first playlist to return. For pagination: Start with 0, then increment by limit (0→50→100→150...) until 'next' field is null in response."
+            "description": "Index of first playlist to return. For pagination: Start with 0, then increment by limit (0→20→40→60...) until 'next' field is null in response."
           }
         ],
         "responses": {
@@ -109,7 +109,7 @@
       "get": {
         "operationId": "getUserSavedTracks",
         "summary": "Get user's saved tracks",
-        "description": "Get user's library of saved/liked tracks. PAGINATION REQUIRED: If user has >50 saved tracks, you MUST paginate. Step 1: Request offset=0, limit=50. Step 2: Check 'next' field in response. Step 3: If 'next' exists, request offset=50. Step 4: Continue until 'next' is null to get all saved tracks.",
+        "description": "Get user's library of saved/liked tracks. PAGINATION REQUIRED if >20 saved tracks: offset=0,limit=20 → check 'next' field → if exists, offset=20 → continue until 'next' is null.",
         "parameters": [
           {
             "name": "limit",
@@ -128,7 +128,7 @@
               "type": "integer",
               "default": 0
             },
-            "description": "Index of first track to return. For pagination: Start with 0, then increment by limit (0→50→100→150...) until 'next' field is null."
+            "description": "Index of first track to return. For pagination: Start with 0, then increment by limit (0→20→40→60...) until 'next' field is null."
           }
         ],
         "responses": {
@@ -375,7 +375,7 @@
       "put": {
         "operationId": "uploadPlaylistCoverImage",
         "summary": "Upload playlist cover image",
-        "description": "ADVANCED: Replace playlist cover with custom image via API. RECOMMENDED WORKFLOW: Generate cover art and provide to user for manual upload instead. API Requirements if used: Square JPEG (equal width/height), Base64 encoded, max 256KB, remove 'data:image/jpeg;base64,' prefix.",
+        "description": "Upload custom cover art directly to a playlist via API. Image must be: 1) Square JPEG (640x640px min, equal width/height), 2) Base64 encoded, 3) Max 256KB, 4) Data URL prefix removed. After generating cover art, convert to base64 and upload. User must have ugc-image-upload scope.",
         "parameters": [
           {
             "name": "playlist_id",
@@ -383,7 +383,8 @@
             "required": true,
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "The Spotify ID of the playlist to add cover art to"
           }
         ],
         "requestBody": {
@@ -392,14 +393,21 @@
             "text/plain": {
               "schema": {
                 "type": "string",
-                "description": "Base64 encoded JPEG image data (without 'data:image/jpeg;base64,' prefix). Image must be square (equal width and height)."
+                "description": "Base64 encoded JPEG image data WITHOUT the 'data:image/jpeg;base64,' prefix. Image must be square with equal width and height (minimum 640x640px recommended).",
+                "example": "/9j/4AAQSkZJRgABAQEAYABgAAD..."
               }
             }
           }
         },
         "responses": {
           "202": {
-            "description": "Image uploaded successfully"
+            "description": "Image uploaded successfully. Cover art will appear on the playlist within a few minutes."
+          },
+          "401": {
+            "description": "Missing ugc-image-upload scope. User must re-authenticate with this scope enabled."
+          },
+          "400": {
+            "description": "Invalid image format. Ensure image is square JPEG, under 256KB, and properly base64 encoded."
           }
         }
       }
@@ -408,7 +416,7 @@
       "get": {
         "operationId": "getPlaylistTracks",
         "summary": "Get playlist tracks",
-        "description": "Get full details of the tracks in a playlist. PAGINATION REQUIRED: Playlists with >100 tracks need pagination. Step 1: Request offset=0, limit=100. Step 2: Check 'next' field. Step 3: If 'next' exists, request offset=100. Step 4: Repeat (offset=200, 300...) until 'next' is null.",
+        "description": "Get full details of tracks in playlist. PAGINATION REQUIRED if >20 tracks: offset=0,limit=20 → check 'next' → if exists, offset=20 → repeat (offset=40,60...) until 'next' is null.",
         "parameters": [
           {
             "name": "playlist_id",
@@ -423,7 +431,7 @@
             "in": "query",
             "schema": {
               "type": "integer",
-              "default": 50,
+              "default": 20,
               "maximum": 100
             },
             "description": "Maximum number of tracks to return (1-100)"
@@ -435,7 +443,7 @@
               "type": "integer",
               "default": 0
             },
-            "description": "Index of first track to return. For pagination: Start with 0, then increment by limit (0→100→200→300...) until 'next' field is null."
+            "description": "Index of first track to return. For pagination: Start with 0, then increment by limit (0→20→40→60...) until 'next' field is null."
           }
         ],
         "responses": {
@@ -817,7 +825,8 @@
         "user-read-playback-state",
         "user-modify-playback-state",
         "user-read-currently-playing",
-        "user-read-recently-played"
+        "user-read-recently-played",
+        "ugc-image-upload"
       ]
     }
   ]
