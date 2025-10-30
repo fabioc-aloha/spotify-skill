@@ -2,7 +2,9 @@
 
 ## Overview
 
-This guide outlines sophisticated playlist curation approaches for the Spotify Custom GPT. Two distinct modes enable different creative approaches: **Search-Based** for algorithmic discovery and **Curated** for hand-picked artistic journeys.
+This guide outlines sophisticated playlist curation approaches for the **Spotify Custom GPT**. When users interact with you conversationally, you'll use these strategies to create playlists through the Spotify Web API. Two distinct modes enable different creative approaches: **Search-Based** for algorithmic discovery and **Curated** for hand-picked artistic journeys.
+
+**Integration**: These strategies work through natural conversation with the Custom GPT, which then executes the appropriate API calls to create playlists on Spotify.
 
 ---
 
@@ -17,17 +19,17 @@ This guide outlines sophisticated playlist curation approaches for the Spotify C
 - Thematic playlists with variety
 
 **Approach:**
-- Use Spotify search queries to find tracks
+- Use Spotify search API queries to find tracks
 - Leverage advanced search operators (artist:, year:, genre:, album:)
 - Apply track type filters (live, studio, acoustic, covers, remix)
 - Organize by phases with duration targets
 
-**Example:**
-```
-### 🎸 70s Era (90 minutes)
-- Query: artist:Led Zeppelin year:1970-1979 -cover
-- Query: album:Physical Graffiti artist:Led Zeppelin
-```
+**How it works:**
+User tells the GPT what they want (e.g., "Create a 70s rock playlist"), and the GPT:
+1. Creates the playlist via `createPlaylist` API
+2. Executes optimized search queries via `search` API
+3. Adds discovered tracks via `addTracksToPlaylist` API
+4. Generates and uploads cover art via `uploadPlaylistCoverImage` API
 
 ---
 
@@ -45,15 +47,13 @@ This guide outlines sophisticated playlist curation approaches for the Spotify C
 - Design intentional flow and transitions
 - Build emotional arcs and peak moments
 
-**Example:**
-```
-### 🌅 Opening (3 tracks)
-**Curatorial Vision**: Gentle invitation into the sonic landscape
-
-1. **Nick Drake** - River Man
-   - Album: Five Leaves Left (1969)
-   - Curatorial Note: Perfect atmospheric opening, sets contemplative mood
-```
+**How it works:**
+User describes their vision (e.g., "Create an emotional journey from dawn to dusk"), and the GPT:
+1. Curates specific tracks based on artistic criteria
+2. Creates the playlist via `createPlaylist` API
+3. Searches for and adds each curated track via `search` and `addTracksToPlaylist` APIs
+4. Provides curatorial notes explaining each choice
+5. Generates thematic cover art via `uploadPlaylistCoverImage` API
 
 ---
 
@@ -61,35 +61,42 @@ This guide outlines sophisticated playlist curation approaches for the Spotify C
 
 ### Search Query Strategies
 
-**Simple Works Best:**
+**When users request playlists, translate their intent into effective Spotify API search queries:**
+
+**Simple Artist/Era Queries:**
 ```
-artist:KISS year:1973-1979
+User: "Create a KISS playlist from the 70s"
+API Query: artist:KISS year:1973-1979
 ```
 
 **Album-Based Discovery:**
 ```
-album:Physical Graffiti artist:Led Zeppelin
+User: "Add tracks from Physical Graffiti"
+API Query: album:Physical Graffiti artist:Led Zeppelin
 ```
-*Note: Do NOT use quotes around album names*
+*Note: Do NOT use quotes around album names in API queries*
 
 **Exclude Unwanted Content:**
 ```
-artist:Beatles -cover -tribute -remix
+User: "Beatles originals only, no covers"
+API Query: artist:Beatles -cover -tribute -remix
 ```
 
 **Genre + Era Exploration:**
 ```
-genre:rock year:1970-1979 -compilation
+User: "70s rock without compilations"
+API Query: genre:rock year:1970-1979 -compilation
 ```
 
 **Mood-Based Discovery:**
 ```
-chill ambient electronic year:2020-2024
+User: "Recent chill ambient music"
+API Query: chill ambient electronic year:2020-2024
 ```
 
 ### Track Type Preferences
 
-Specify track type to focus search results:
+When users specify track types, use these filters in your search queries:
 
 - **any** (default): All track versions
 - **live**: Live performances and concerts
@@ -98,30 +105,39 @@ Specify track type to focus search results:
 - **covers**: Cover versions by other artists
 - **remix**: Remixed versions
 
-**Usage Example:**
-```markdown
-- **Track Type Preference**: live
+**API Implementation:**
+```
+User: "Create a playlist with live versions"
+Approach: Add "live" to search queries, exclude "-studio"
+
+User: "Studio recordings only"
+Approach: Exclude "-live -acoustic -remix" from searches
 ```
 
 ### Phase-Based Structure
 
-Organize playlists into phases with clear duration targets:
+When users request multi-phase playlists, organize searches by phases:
 
-```markdown
-### 🎸 Opening Phase (30 minutes)
-- Query: artist:Pink Floyd year:1970-1975
+**Example User Request:** "Create a Pink Floyd journey with three sections"
 
-### 🔥 Peak Energy (45 minutes)
-- Query: artist:Led Zeppelin year:1969-1973 -cover
-
-### 🌙 Wind Down (30 minutes)
-- Query: artist:Pink Floyd album:Wish You Were Here
-```
+**GPT Implementation:**
+1. Create playlist via API
+2. Execute phase-specific searches:
+   - Phase 1 (Opening): `artist:Pink Floyd year:1970-1975` (30 min target)
+   - Phase 2 (Peak): `artist:Led Zeppelin year:1969-1973 -cover` (45 min target)
+   - Phase 3 (Wind Down): `artist:Pink Floyd album:Wish You Were Here` (30 min target)
+3. Add tracks from each phase sequentially
+4. Generate cover art reflecting the journey
 
 **Duration Guidelines:**
-- Short Focus: 30-45 minutes
-- Medium Journey: 60-90 minutes
-- Epic Experience: 120-180 minutes
+- **Short Focus**: 30-45 minutes (8-12 tracks)
+- **Medium Journey**: 60-90 minutes (18-25 tracks)
+- **Epic Experience**: 120-180 minutes (35-50 tracks)
+
+**API Considerations:**
+- Use `limit=10-15` per search to avoid response size errors
+- Make multiple searches for variety rather than one large search
+- Add tracks in batches via `addTracksToPlaylist` (max 100 per request)
 
 ---
 
@@ -203,39 +219,56 @@ Organize playlists into phases with clear duration targets:
 
 ---
 
-## 📋 Playlist Metadata Format
+## 📋 Playlist Creation via API
 
-### Core Metadata (Both Modes)
+### How the Custom GPT Creates Playlists
 
-```markdown
-## Metadata
-- **Name**: [Emoji] [Playlist Name] - Alex Method ([Duration/Curated])
-- **Description**: [Compelling description under 300 characters]
-- **Emoji**: [Mood/essence representation]
-- **Mode**: [search OR curated]
-- **Market**: [US/BR/JP/etc - default US]
-- **Cover Art Hint**: [Visual description for AI cover generation]
-- **Privacy**: public
-- **Target Audience**: [Who is this for?]
+When a user requests a playlist, the GPT follows this workflow:
+
+**1. Understand User Intent**
+- Analyze the request for mode (search-based vs curated)
+- Identify key parameters: duration, genre, mood, era, artist, etc.
+- Determine if special techniques apply (phased, therapeutic, cultural, etc.)
+
+**2. Create Playlist via API**
+```
+API Call: createPlaylist
+Body: {
+  "name": "[Generated from user intent]",
+  "description": "[Compelling description < 300 chars]",
+  "public": true  // Unless user specifies private
+}
+Result: Save playlist_id for subsequent operations
 ```
 
-### Search Mode Additional Fields
+**3. Execute Search Strategy**
+- **Search-Based Mode**: Use optimized API queries with limit=10-15
+- **Curated Mode**: Search for specific tracks by artist/title
+- Make multiple focused searches for variety
+- Extract track IDs from responses
 
-```markdown
-- **Duration Target**: [X] minutes
-- **Track Type Preference**: [any/live/studio/acoustic/covers/remix]
-- **Randomize Selection**: false
+**4. Add Tracks to Playlist**
+```
+API Call: addTracksToPlaylist
+Parameters: playlist_id
+Body: {
+  "uris": ["spotify:track:{id1}", "spotify:track:{id2}", ...]
+}
+Note: Max 100 tracks per request, batch if needed
 ```
 
-### Curated Mode Additional Fields
-
-```markdown
-- **Curation Mode**: curated
-- **Curatorial Theme**: [Overarching artistic concept/story/emotion]
-
-## Curatorial Statement
-[2-3 sentences describing your artistic vision for this playlist - why these specific tracks, what journey you're creating, what emotional or cultural territory you're exploring]
+**5. Generate and Upload Cover Art**
 ```
+API Call: uploadPlaylistCoverImage
+Parameters: playlist_id
+Body: Base64 encoded JPEG (square, max 256KB)
+Result: 202 Accepted (async processing)
+```
+
+**6. Confirm to User**
+- Provide playlist link
+- Summarize what was created
+- Offer to make adjustments
 
 ---
 
@@ -243,84 +276,77 @@ Organize playlists into phases with clear duration targets:
 
 ### Example 1: Search-Based - Single Artist Discovery
 
-```markdown
-# 🎸 Led Zeppelin - The Complete 70s - Alex Method (120 minutes)
+**User Request:** "Create a comprehensive Led Zeppelin playlist from the 70s, about 2 hours long"
 
-## Metadata
-- **Name**: 🎸 Led Zeppelin - The Complete 70s - Alex Method (120 minutes)
-- **Description**: Deep dive into Led Zeppelin's legendary 1970s catalog, from blues-rock foundations to epic studio masterpieces
-- **Emoji**: 🎸
-- **Mode**: search
-- **Duration Target**: 120 minutes
-- **Track Type Preference**: studio
-- **Privacy**: public
+**GPT Process:**
+1. **Create Playlist**
+   - Name: "🎸 Led Zeppelin - The Complete 70s - Alex Method (120 minutes)"
+   - Description: "Deep dive into Led Zeppelin's legendary 1970s catalog, from blues-rock foundations to epic studio masterpieces"
+   - Public: true
 
-## Track Categories
+2. **Execute Phased Searches** (3 phases)
+   - **Early Era** (40 min): `search?q=artist:Led Zeppelin year:1969-1972 -cover -live&type=track&limit=12`
+   - **Peak Period** (40 min):
+     - `search?q=album:Physical Graffiti artist:Led Zeppelin&type=track&limit=8`
+     - `search?q=album:Led Zeppelin IV artist:Led Zeppelin&type=track&limit=7`
+   - **Later Works** (40 min): `search?q=artist:Led Zeppelin year:1975-1979 -cover&type=track&limit=12`
 
-### 🎵 Early Era (40 minutes)
-- Query: artist:Led Zeppelin year:1969-1972 -cover -live
+3. **Add Tracks**
+   - Convert track IDs to URIs: `spotify:track:{id}`
+   - Call `addTracksToPlaylist` with batch of URIs
 
-### 🔥 Peak Period (40 minutes)
-- Query: album:Physical Graffiti artist:Led Zeppelin
-- Query: album:Led Zeppelin IV artist:Led Zeppelin
+4. **Generate Cover Art**
+   - Theme: 70s rock aesthetic, Led Zeppelin vibes
+   - Upload via `uploadPlaylistCoverImage`
 
-### 🌙 Later Works (40 minutes)
-- Query: artist:Led Zeppelin year:1975-1979 -cover
-```
+5. **Confirm**
+   - "✅ Created '🎸 Led Zeppelin - The Complete 70s' with 39 tracks (122 minutes). [Spotify Link]"
+
+---
 
 ### Example 2: Curated - Emotional Journey
 
-```markdown
-# 🌅 Dawn to Dusk - Alex Method (Curated)
+**User Request:** "Create a carefully curated emotional journey from dawn to dusk"
 
-## Metadata
-- **Name**: 🌅 Dawn to Dusk - Alex Method (Curated)
-- **Description**: A carefully crafted emotional journey from quiet awakening through afternoon energy to evening reflection
-- **Emoji**: 🌅
-- **Mode**: curated
-- **Curation Mode**: curated
-- **Curatorial Theme**: The arc of a day told through music - awakening, striving, reflecting
-- **Privacy**: public
-- **Target Audience**: Listeners seeking intentional, transformative musical experiences
+**GPT Process:**
+1. **Understand Vision**
+   - Mode: Curated (hand-picked tracks)
+   - Theme: Daily emotional arc
+   - Phases: Awakening → Midday Energy → Evening Reflection
 
-## Curatorial Statement
-This playlist maps the emotional topology of a single day, moving from delicate morning introspection through midday intensity and into contemplative evening. Each track is chosen not just for quality but for its role in the larger narrative arc.
+2. **Create Playlist**
+   - Name: "🌅 Dawn to Dusk - Alex Method (Curated)"
+   - Description: "A carefully crafted emotional journey from quiet awakening through afternoon energy to evening reflection"
+   - Public: true
 
-## Curated Track List
+3. **Curate & Search for Specific Tracks**
 
-### 🌅 Awakening (3 tracks)
-**Curatorial Vision**: Gentle emergence from stillness into consciousness
+   **Phase 1: Awakening**
+   - Search: `q=River Man artist:Nick Drake&type=track&limit=1`
+   - Search: `q=Fade Into You artist:Mazzy Star&type=track&limit=1`
+   - Search: `q=Hoppípolla artist:Sigur Rós&type=track&limit=1`
+   - **Curatorial Notes**: "Opening with Nick Drake's orchestral folk creates dawn light atmosphere. Mazzy Star adds dreamy motion. Sigur Rós brings gradual joy."
 
-1. **Nick Drake** - River Man
-   - *Album: Five Leaves Left (1969)*
-   - *Curatorial Note: Orchestral folk that feels like dawn light - perfect atmospheric invitation into the listening experience*
+   **Phase 2: Midday Energy**
+   - Search: `q=15 Step artist:Radiohead album:In Rainbows&type=track&limit=1`
+   - Search: `q=Wake Up artist:Arcade Fire album:Funeral&type=track&limit=1`
+   - **Curatorial Notes**: "Propulsive Radiohead represents active striving. Arcade Fire provides anthemic peak moment."
 
-2. **Mazzy Star** - Fade Into You
-   - *Album: So Tonight That I Might See (1993)*
-   - *Curatorial Note: Builds on Drake's delicacy while adding dreamy motion - morning stretching into day*
+   **Phase 3: Evening Reflection**
+   - Search: `q=Holocene artist:Bon Iver&type=track&limit=1`
+   - **Curatorial Notes**: "Bon Iver brings us back to stillness with earned wisdom - perfect closing meditation."
 
-3. **Sigur Rós** - Hoppípolla
-   - *Album: Takk... (2005)*
-   - *Curatorial Note: Joy arriving gradually - transition from contemplation to engagement*
+4. **Add Tracks**
+   - Add each track via `addTracksToPlaylist` preserving curated order
 
-### ☀️ Midday Energy (4 tracks)
-**Curatorial Vision**: Full engagement with life's intensity and complexity
+5. **Explain to User**
+   - Present the playlist with curatorial vision
+   - Explain why each track was chosen and how they connect
+   - "This playlist maps the emotional topology of a single day..."
 
-1. **Radiohead** - 15 Step
-   - *Album: In Rainbows (2007)*
-   - *Curatorial Note: Propulsive energy that never loses intelligence - represents active striving*
-
-2. **Arcade Fire** - Wake Up
-   - *Album: Funeral (2004)*
-   - *Curatorial Note: Anthemic peak - the day's emotional high point*
-
-### 🌙 Evening Reflection (3 tracks)
-**Curatorial Vision**: Integration and peaceful closure
-
-1. **Bon Iver** - Holocene
-   - *Album: Bon Iver, Bon Iver (2011)*
-   - *Curatorial Note: Brings us back to stillness with earned wisdom - perfect closing meditation*
-```
+6. **Generate Cover Art**
+   - Theme: Dawn to dusk gradient, emotional journey
+   - Upload via `uploadPlaylistCoverImage`
 
 ---
 
@@ -384,59 +410,107 @@ This playlist maps the emotional topology of a single day, moving from delicate 
 
 ---
 
-## 🎨 Integration with Spotify Custom GPT
+## 🎨 Implementation Guidelines for Custom GPT
 
-### Workflow Integration
+### API Workflow Integration
 
-When creating playlists, the Custom GPT should:
+The Custom GPT translates natural language requests into API operations:
 
-1. **Understand user intent** - Determine if search-based or curated approach is more appropriate
-2. **Follow correct order** - Create playlist → Add tracks → Offer cover art
-3. **Apply curation principles** - Use appropriate search strategies or curatorial reasoning
-4. **Maintain quality standards** - Follow validation checklist before finalizing
+**1. Intent Recognition**
+- Parse user request for key information
+- Determine mode (search-based vs curated)
+- Identify parameters (duration, genre, mood, artist, etc.)
+- Detect special techniques (phased, therapeutic, cultural)
+
+**2. Playlist Creation Flow**
+```
+Step 1: createPlaylist → Get playlist_id
+Step 2: search (multiple times if needed) → Get track IDs
+Step 3: addTracksToPlaylist → Add tracks (batches of 100 max)
+Step 4: uploadPlaylistCoverImage → Add cover art
+Step 5: Confirm to user with link
+```
+
+**3. Search Optimization**
+- Keep `limit=10-15` to avoid response size errors
+- Make multiple focused searches instead of broad queries
+- Use advanced operators (artist:, year:, album:, -exclude)
+- Extract track IDs from `tracks.items[].id`
+
+**4. Quality Assurance**
+- Follow validation checklist before finalizing
+- Ensure appropriate curation principles are applied
+- Verify flow and transitions (especially for curated mode)
+- Generate thematic cover art matching playlist mood
 
 ### Mode Selection Guidance
 
-**Use Search-Based Mode when:**
-- User wants to discover new music
-- Request involves genre, era, or artist exploration
-- Large playlist requested (60+ minutes)
-- User wants algorithmic variety
+**Choose Search-Based Mode when user:**
+- Wants to discover new music ("Find me some...")
+- Requests genre, era, or artist exploration ("70s rock", "Beatles discography")
+- Asks for large playlists (60+ minutes, 20+ tracks)
+- Wants algorithmic variety ("Mix of similar artists")
+- Uses discovery language ("Explore", "Discover", "Find")
 
-**Use Curated Mode when:**
-- User has specific artistic vision
-- Request emphasizes "journey" or "experience"
-- User wants hand-picked, intentional selection
-- Quality over quantity is the priority
+**Choose Curated Mode when user:**
+- Has specific artistic vision ("Emotional journey", "Story arc")
+- Requests "journey" or "experience" language
+- Wants hand-picked, intentional selection ("Carefully selected")
+- Emphasizes quality over quantity ("Best tracks only", "Premium experience")
+- Asks for curatorial reasoning ("Explain why you chose these")
 
-### Cover Art Alignment
+**API Impact:**
+- **Search-Based**: More API calls to `search`, broader queries, faster creation
+- **Curated**: Targeted `search` for specific tracks, more deliberate, richer explanations
 
-Cover art should visually represent:
-- **Search Mode**: Genre aesthetics, era styling, discovery theme
-- **Curated Mode**: Emotional journey, artistic vision, curatorial theme
+### Cover Art Generation
+
+After creating and populating a playlist, generate appropriate cover art:
+
+**API Process:**
+1. Generate square JPEG image (640x640px min) based on playlist theme
+2. Ensure file size under 256KB
+3. Convert to base64 encoding (without data URL prefix)
+4. Call `uploadPlaylistCoverImage` with playlist_id
+5. Expect 202 Accepted response (async processing)
+
+**Visual Themes by Mode:**
+- **Search-Based**: Genre aesthetics, era styling, discovery theme (e.g., 70s vinyl aesthetic for classic rock)
+- **Curated**: Emotional journey, artistic vision, curatorial theme (e.g., dawn-to-dusk gradient)
+
+**User Scope Note:**
+- Requires `ugc-image-upload` OAuth scope
+- If 401 error, inform user to re-authenticate with proper scopes
+- If 400 error, check image format (square JPEG, under 256KB)
 
 ---
 
-## ⚡ Quick Reference - Trigger Phrases
+## ⚡ Quick Reference - User Request Patterns
 
-### Playlist Creation Triggers
+### Playlist Creation Requests
 
 **Basic Playlist Creation:**
 - "Create a [genre] playlist for [activity]"
 - "Make music for [context]"
 - "I want a [mood] playlist"
+- "Build me a [duration] minute [genre] mix"
+
+**GPT Response:** Immediately create via API (no configuration files needed)
 
 **Phased/Journey Playlists:**
 - "Create a phased playlist from [mood] to [mood]"
 - "I want a journey from [energy level] to [energy level]"
 - "Make a [number]-section playlist"
-- "Three-part journey"
-- "Five-phase experience"
+- "Three-part journey" / "Five-phase experience"
+
+**GPT Response:** Execute phased search strategy with multiple API queries
 
 **Artist Ecosystem/Cohorts:**
 - "Create cohorts for [artist name]"
 - "Musical ecosystem around [artist]"
 - "Show [artist]'s influences and descendants"
+
+**GPT Response:** Search for similar artists and related tracks via API
 
 **Specialized Approaches:**
 - "[Genre] with live versions"
@@ -445,23 +519,29 @@ Cover art should visually represent:
 - "[Decade] classics"
 - "[Country/Region] music legends"
 
-### Enhancement & Quality Triggers
+**GPT Response:** Apply appropriate search filters and exclusions
+
+### Enhancement & Modification Requests
 
 **Deduplication:**
-- "No duplicates"
-- "Remove repeats"
-- "Unique tracks only"
+- "No duplicates" / "Remove repeats" / "Unique tracks only"
+
+**GPT Response:** Track IDs added to playlist, automatic deduplication by Spotify
 
 **Documentation:**
-- "Document the tracks"
-- "Show the final list"
-- "Save track details"
-- "Explain the choices"
+- "Document the tracks" / "Show the final list" / "Explain the choices"
+
+**GPT Response:** Provide formatted track list with details from API responses
 
 **Analysis:**
-- "Analyze the progression"
-- "Check the flow"
-- "Explain the musical choices"
+- "Analyze the progression" / "Check the flow" / "Explain the musical choices"
+
+**GPT Response:** Analyze track sequence and provide curatorial insights
+
+**Modification:**
+- "Add more [genre] tracks" / "Remove slow songs" / "Make it more upbeat"
+
+**GPT Response:** Execute additional searches and update playlist via API
 
 ---
 
@@ -515,315 +595,267 @@ Cover art should visually represent:
 
 ### Therapeutic Music Design
 
-The Alex Method DJ approach incorporates evidence-based therapeutic music selection for mental health and cognitive support.
+When users request therapeutic playlists, apply evidence-based selection criteria through API searches:
 
 **ADHD Focus Enhancement:**
-- **Scientific Basis**: Neuroplasticity research, dopamine regulation
-- **Triggers**: "ADHD focus playlist", "Concentration music", "Attention enhancement"
-- **Musical Characteristics**: Moderate tempo (60-90 BPM), minimal lyrics, instrumental complexity
-- **Curation Strategy**: Progressive builds, consistent energy, avoiding jarring transitions
+- **User Request**: "ADHD focus playlist" / "Concentration music" / "Attention enhancement"
+- **API Search Strategy**:
+  - Search for instrumental tracks: `q=instrumental ambient focus&type=track&limit=15`
+  - Filter by tempo: Look for moderate BPM (60-90) in track analysis
+  - Exclude: `-vocal -lyrics -podcast`
+- **Curation**: Progressive builds, consistent energy, smooth transitions
+- **Duration**: 45-90 minutes optimal for focus sessions
 
 **Anxiety Reduction:**
-- **Scientific Basis**: Heart rate variability optimization, cortisol reduction
-- **Triggers**: "Anxiety relief music", "Calming playlist", "Stress reduction"
-- **Musical Characteristics**: Slow tempo (50-70 BPM), gentle dynamics, nature sounds integration
-- **Curation Strategy**: Gradual energy descent, predictable patterns, harmonic consonance
+- **User Request**: "Anxiety relief music" / "Calming playlist" / "Stress reduction"
+- **API Search Strategy**:
+  - Search for calming genres: `q=ambient meditation calm&type=track&limit=15`
+  - Target slow tempo tracks (50-70 BPM)
+  - Include: `piano acoustic nature sounds`
+- **Curation**: Gradual energy descent, predictable patterns, harmonic consonance
+- **Duration**: 30-60 minutes for active calming
 
 **Depression Support:**
-- **Scientific Basis**: Serotonin activation, positive psychology principles
-- **Triggers**: "Mood boost playlist", "Depression support", "Uplifting music"
-- **Musical Characteristics**: Major keys, uplifting melodies, gradual tempo increase
-- **Curation Strategy**: Start gentle, build to energizing, maintain hope/positivity themes
+- **User Request**: "Mood boost playlist" / "Depression support" / "Uplifting music"
+- **API Search Strategy**:
+  - Search uplifting tracks: `q=uplifting positive hopeful&type=track&limit=15`
+  - Target major keys and positive lyrics
+  - Gradual tempo increase throughout playlist
+- **Curation**: Start gentle (don't overwhelm), build to energizing, maintain hope themes
+- **Duration**: 45-60 minutes
 
 **Sleep Preparation:**
-- **Scientific Basis**: Circadian rhythm support, delta wave entrainment
-- **Triggers**: "Sleep music", "Bedtime playlist", "Wind down for sleep"
-- **Musical Characteristics**: Very slow tempo (40-60 BPM), minimal percussion, ambient textures
-- **Curation Strategy**: Energy descent, decreasing complexity, fade to silence consideration
+- **User Request**: "Sleep music" / "Bedtime playlist" / "Wind down for sleep"
+- **API Search Strategy**:
+  - Search ambient sleep tracks: `q=sleep ambient soundscape&type=track&limit=15`
+  - Very slow tempo (40-60 BPM)
+  - Exclude: `-rock -metal -upbeat -energetic`
+- **Curation**: Energy descent, decreasing complexity, ambient textures
+- **Duration**: 30-45 minutes (cycle-appropriate)
 
 ### Cultural & Regional Authenticity
 
+When users request culturally authentic playlists, use region-specific API searches:
+
 **Regional Expertise:**
-- **Approach**: Geography-based curation with native artist representation
-- **Triggers**: "[Country] rock legends", "[Region] electronic pioneers", "Authentic [culture]"
-- **Quality Standards**: Prioritize artists from the specified region, include historical context
-- **Example**: "British Invasion rock" → Focus on UK artists from 1960s
+- **User Request**: "[Country] rock legends" / "[Region] electronic pioneers" / "Authentic [culture]"
+- **API Search Strategy**:
+  - Use region-specific search: `q=artist:[region] genre:[genre]&type=track&limit=15`
+  - Example: `q=uk rock year:1960-1969&type=track&limit=15` for British Invasion
+  - Specify market parameter if needed: `market=GB` for UK market
+- **Quality**: Prioritize artists from specified region with historical context
+- **Verification**: Check artist origin in search results metadata
 
 **Historical Accuracy:**
-- **Approach**: Era-appropriate selections with period-correct sound
-- **Triggers**: "[Decade] authentic music", "Period-correct [genre]", "[Year range] classics"
-- **Quality Standards**: Historical research validation, avoid anachronistic production
-- **Example**: "70s disco" → Studio 54 era, analog production, period instrumentation
+- **User Request**: "[Decade] authentic music" / "Period-correct [genre]" / "[Year range] classics"
+- **API Search Strategy**:
+  - Use year filters: `q=genre:disco year:1975-1980&type=track&limit=15`
+  - Exclude modern remasters if specified: `-remaster`
+  - Focus on original album versions: `-remix -cover`
+- **Quality**: Era-appropriate sound, avoid anachronistic production
+- **Example**: "70s disco" → Studio 54 era, analog sound
 
 **Genre Purity:**
-- **Approach**: Style-specific curation adhering to genre definitions
-- **Triggers**: "Pure [genre]", "Authentic [style]", "True [genre] sound"
-- **Quality Standards**: Genre definition adherence, avoid crossover/fusion unless specified
-- **Example**: "Pure jazz" → Avoid jazz-fusion, focus on traditional standards
+- **User Request**: "Pure [genre]" / "Authentic [style]" / "True [genre] sound"
+- **API Search Strategy**:
+  - Strict genre filtering: `q=genre:[exact_genre]&type=track&limit=15`
+  - Exclude fusion/crossover: `-fusion -blend -mix`
+  - Example: `q=genre:jazz -fusion -smooth&type=track&limit=15` for pure jazz
+- **Quality**: Adhere to genre definitions, avoid crossover unless specified
 
 ---
 
-## 🎯 Advanced Filtering & Preferences
+## 🎯 Advanced Filtering & API Search Techniques
 
-### Track Type Filtering (Expanded)
+### Track Type Filtering (API Implementation)
+
+When users specify track types, modify your API search queries accordingly:
 
 **Live Performances:**
-- **Characteristics**: Concert recordings, audience presence, improvisational elements
-- **Triggers**: "Live versions", "Concert recordings", "Live performances only"
+- **User Request**: "Live versions" / "Concert recordings" / "Live performances only"
+- **API Search**: Add `live` to query, exclude studio: `q=artist:Queen live -studio&type=track&limit=15`
 - **Use Cases**: Concert energy replication, raw performance feel, audience connection
-- **Search Strategy**: Append `-studio` to exclude studio versions
 
 **Studio Recordings:**
-- **Characteristics**: Original album versions, polished production, intended sound
-- **Triggers**: "Studio versions", "Original recordings", "Album versions only"
+- **User Request**: "Studio versions" / "Original recordings" / "Album versions only"
+- **API Search**: Exclude other versions: `q=artist:Beatles -live -acoustic&type=track&limit=15`
 - **Use Cases**: High audio quality, artist's intended arrangement, consistency
-- **Search Strategy**: Append `-live -acoustic` to exclude other versions
 
 **Acoustic Versions:**
-- **Characteristics**: Stripped-down arrangements, intimate feel, unplugged
-- **Triggers**: "Acoustic versions", "Unplugged", "Acoustic arrangements only"
+- **User Request**: "Acoustic versions" / "Unplugged" / "Acoustic arrangements only"
+- **API Search**: Include acoustic keyword: `q=artist:Nirvana acoustic&type=track&limit=10`
 - **Use Cases**: Intimate settings, coffee shops, quiet listening
-- **Search Strategy**: "acoustic" OR "unplugged" in search query
-
-**Radio Edits:**
-- **Characteristics**: Shortened versions, explicit content removed, mainstream-friendly
-- **Triggers**: "Radio edits", "Clean versions", "Radio-friendly"
-- **Use Cases**: Public/family settings, time-constrained playlists
-- **Search Strategy**: Specify "radio edit" or filter by track duration
 
 **Extended/Remix Versions:**
-- **Characteristics**: Longer arrangements, electronic production, DJ-friendly
-- **Triggers**: "Extended versions", "Remixes", "DJ edits"
+- **User Request**: "Extended versions" / "Remixes" / "DJ edits"
+- **API Search**: Include remix keyword: `q=artist:Daft Punk remix&type=track&limit=15`
 - **Use Cases**: Dance events, club atmosphere, extended listening
-- **Search Strategy**: "remix" OR "extended" in search query
 
-### Quality & Popularity Filters
+### Popularity & Discovery Balance
+
+Use Spotify's popularity metadata from search results to balance mainstream vs discovery:
 
 **High Popularity (Mainstream):**
-- **Spotify Metric**: Popularity score > 50
-- **Triggers**: "Popular songs", "Hits", "Well-known tracks", "Mainstream"
-- **Curation Balance**: 70-100% high popularity tracks
+- **User Request**: "Popular songs" / "Hits" / "Well-known tracks" / "Mainstream"
+- **API Strategy**: After search, filter results where `popularity > 50`
+- **Curation**: 70-100% high popularity tracks
 - **Use Cases**: Parties, broad audience appeal, singalong potential
 
 **Discovery Mode (Hidden Gems):**
-- **Spotify Metric**: Popularity score < 40
-- **Triggers**: "Hidden gems", "Deep cuts", "Unknown tracks", "Discover new music"
-- **Curation Balance**: 70-100% lower popularity tracks
+- **User Request**: "Hidden gems" / "Deep cuts" / "Unknown tracks" / "Discover new music"
+- **API Strategy**: After search, filter results where `popularity < 40`
+- **Curation**: 70-100% lower popularity tracks
 - **Use Cases**: Music discovery, avoiding overplayed songs, crate-digging feel
 
 **Balanced Mix:**
-- **Spotify Metric**: Mix across popularity spectrum
-- **Triggers**: "Mix of hits and deep cuts", "Balanced selection", "Variety"
-- **Curation Balance**: 40% high popularity, 60% discovery tracks
+- **User Request**: "Mix of hits and deep cuts" / "Balanced selection" / "Variety"
+- **API Strategy**: No filtering, accept diverse popularity scores
+- **Curation**: Natural mix across popularity spectrum
 - **Use Cases**: Sophisticated listeners, introducing new music while staying accessible
 
-### Duration & Scope Controls
+### Duration Control via API
 
 **Specific Duration:**
-- **Precision**: Target exact duration ±5 minutes
-- **Triggers**: "[X] minutes exactly", "Precisely [duration]"
-- **Strategy**: Calculate average track length, select track count to match
-
-**Duration Range:**
-- **Precision**: Flexible within specified range
-- **Triggers**: "Around [X] minutes", "[Min]-[max] minutes", "Approximately [duration]"
-- **Strategy**: Aim for midpoint of range, allow natural flow
+- **User Request**: "[X] minutes exactly" / "Precisely [duration]"
+- **API Strategy**:
+  - Calculate target track count (e.g., 30 min ÷ 3.5 min avg = ~9 tracks)
+  - Fetch tracks, monitor cumulative duration from API responses
+  - Stop adding when duration target reached ±2 minutes
 
 **Track Count Focus:**
-- **Precision**: Exact number of tracks
-- **Triggers**: "[X] tracks", "Exactly [number] songs", "[Number]-song playlist"
-- **Strategy**: Prioritize track count over duration, adjust for average length
+- **User Request**: "[X] tracks" / "Exactly [number] songs" / "[Number]-song playlist"
+- **API Strategy**: Set `limit` in search calls to match or exceed track count needed
+- **Priority**: Track count over duration
 
 ---
 
-## 📊 Documentation & Quality Assurance
+## 📊 Documentation & User Communication
 
-### Track Manifest Documentation
+### Providing Track Information
 
-**Complete Track List:**
-```markdown
+When users request track details, format information from API responses:
+
+**Complete Track List Format:**
+```
+✅ Playlist Created: [Playlist Name]
+
+Track List (XX tracks, XXX minutes):
+
 1. **Artist Name** - Track Title
-   - Album: [Album Name]
-   - Year: [Release Year]
-   - Duration: [MM:SS]
-   - Type: [Live/Studio/Acoustic]
-   - Venue/Context: [If applicable]
-   - Curatorial Note: [Why this track]
+   • Album: [Album Name] ([Year])
+   • Duration: [MM:SS]
+   • Popularity: [Score/100]
+
+2. **Artist Name** - Track Title
+   • Album: [Album Name] ([Year])
+   • Duration: [MM:SS]
+
+[Continue...]
+
+🎵 [Spotify Playlist Link]
 ```
 
-**Triggers:**
-- "Document the tracks"
-- "Show the final list"
-- "Save track details"
-- "Create track manifest"
+**User Triggers:**
+- "Document the tracks" / "Show the final list" / "What tracks did you add?"
 
-**Use Cases:**
-- Historical records
-- Playlist reconstruction
-- Curation analysis
-- Sharing with collaborators
+**API Source:**
+- Track data from `search` response: `tracks.items[]`
+- Fields: `name`, `artists[].name`, `album.name`, `album.release_date`, `duration_ms`, `popularity`
 
-### Flow Analysis Documentation
+### Flow Analysis Communication
 
-**Musical Progression Analysis:**
-```markdown
-Phase 1 (Tracks 1-10): Opening/Genesis
-- Energy Level: Low-Medium (3/10)
-- Key Centers: C major, G major
-- Tempo Range: 60-75 BPM
-- Emotional Arc: Contemplative → Hopeful
-- Curatorial Intent: Gentle invitation, establish sonic palette
+When users ask about playlist structure, provide curatorial analysis:
 
-Transition 1→2: [Track 10 to Track 11]
-- Energy Shift: +2 (5/10)
-- Key Relationship: Perfect fifth modulation (G → D)
-- Tempo Change: +10 BPM
-- Curatorial Intent: Natural uplift, maintain smoothness
+**Phase Analysis Format:**
+```
+📊 Playlist Flow Analysis:
+
+🌅 Phase 1: [Name] (Tracks 1-X, XX minutes)
+• Energy Level: [Low/Med/High]
+• Mood: [Description]
+• Key Tracks: [Artist - Title], [Artist - Title]
+• Purpose: [Curatorial intent]
+
+⚡ Phase 2: [Name] (Tracks X-Y, XX minutes)
+• Energy Level: [Description]
+• Mood: [Description]
+• Transition: [How it connects to Phase 1]
+
+[Continue for all phases...]
+
+Overall Arc: [Summary of emotional/energy journey]
 ```
 
-**Triggers:**
-- "Analyze the progression"
-- "Explain the flow"
-- "Document the journey"
-- "Check the transitions"
+**User Triggers:**
+- "Analyze the progression" / "Explain the flow" / "Why did you choose this order?"
 
----
-
-## 🚀 Future Innovation Roadmap
-
-*Visionary concepts for next-generation playlist curation*
-
-### Emotional Journey Mapping (Future Concept)
-
-**Emotion-Based Progression:**
-- **Vision**: Playlists following emotional arcs (sadness → hope → joy)
-- **Potential Triggers**: "Emotional journey from [emotion] to [emotion]", "Healing playlist"
-- **Implementation**: Sentiment analysis of lyrics + musical emotion detection algorithms
-
-**Mood Synchronization:**
-- **Vision**: Real-time adaptation based on user's current emotional state
-- **Potential Triggers**: "Match my current mood", "Sync with my feelings"
-- **Implementation**: Biometric integration (heart rate, skin conductance) or mood input interfaces
-
-**Therapeutic Narrative:**
-- **Vision**: Music that tells healing story through emotional progression
-- **Potential Triggers**: "Musical therapy session", "Emotional healing journey"
-- **Implementation**: Psychology-informed track sequencing with narrative structure
-
-### Hyper-Contextual Curation (Future Concept)
-
-**Weather-Responsive Playlists:**
-- **Vision**: Adapt to current weather conditions
-- **Potential Triggers**: "Music for this weather", "Rainy day vibes", "Sunny afternoon"
-- **Implementation**: Weather API integration + mood mapping algorithms
-
-**Time-of-Day Optimization:**
-- **Vision**: Circadian rhythm-aware music selection
-- **Potential Triggers**: "Perfect for 3pm energy dip", "Dawn meditation music"
-- **Implementation**: Chronobiology research + time-based selection algorithms
-
-**Location-Aware Curation:**
-- **Vision**: Music appropriate for geographic/cultural context
-- **Potential Triggers**: "Music for where I am", "Local culture playlist"
-- **Implementation**: GPS + cultural music databases + regional charts
-
-**Activity Recognition:**
-- **Vision**: Adapt to detected physical activity
-- **Potential Triggers**: "Music for what I'm doing", "Auto-detect activity"
-- **Implementation**: Motion sensors + activity classification + BPM matching
-
-### Advanced Musical Intelligence (Future Concept)
-
-**Harmonic Progression Mapping:**
-- **Vision**: Playlists designed around music theory progressions
-- **Potential Triggers**: "Chord progression journey", "Harmonic storytelling"
-- **Implementation**: Music theory analysis + key progression algorithms
-
-**Tempo Synchronization:**
-- **Vision**: BPM-matched sequences for specific activities
-- **Potential Triggers**: "Match my heart rate", "Perfect running cadence"
-- **Implementation**: Heart rate monitoring + tempo analysis + BPM adjustment
-
-**Instrumental Conversation:**
-- **Vision**: Tracks chosen for instrument interactions
-- **Potential Triggers**: "Guitar conversation playlist", "Piano-meets-synth dialogue"
-- **Implementation**: Instrument isolation + interaction analysis
-
-**Audio Signature Matching:**
-- **Vision**: Tracks based on sonic fingerprint similarities
-- **Potential Triggers**: "Songs that sound like this", "Audio DNA matching"
-- **Implementation**: Advanced audio analysis + similarity algorithms
-
-### Cognitive Enhancement Curation (Future Concept)
-
-**Productivity State Optimization:**
-- **Vision**: Music for specific cognitive functions
-- **Potential Triggers**: "Deep work music", "Creative flow state", "Problem-solving soundtrack"
-- **Implementation**: Neuroscience research + cognitive load optimization
-
-**Memory Palace Building:**
-- **Vision**: Create musical memory anchors
-- **Potential Triggers**: "Memory enhancement playlist", "Musical memory palace"
-- **Implementation**: Memory research + associative learning algorithms
-
-**Learning Acceleration:**
-- **Vision**: Enhance information retention and recall
-- **Potential Triggers**: "Study optimization music", "Language learning soundtrack"
-- **Implementation**: Educational psychology + retention enhancement research
-
-**Mindfulness Integration:**
-- **Vision**: Secular meditation music with progressive complexity
-- **Potential Triggers**: "Mindfulness journey", "Meditation progression playlist"
-- **Implementation**: Contemplative practices + progressive complexity algorithms
+**Value:**
+- Shows deliberate curation decisions
+- Helps users understand the journey
+- Validates quality of playlist construction
 
 ---
 
 ## 💡 Pro Tips for Optimal Curation
 
-### Combination Strategies
+### Conversational Request Strategies
 
-**Layered Requests:**
-- Combine multiple techniques in one request
-- **Example**: "Create a 5-phase ADHD focus playlist with live versions and no duplicates"
-- **Benefit**: Sophisticated curation meeting multiple criteria simultaneously
+**Be Specific with Context:**
+- ✅ Good: "Create a 2-hour ADHD focus playlist with instrumental tracks, no duplicates"
+- ❌ Vague: "Make me a focus playlist"
+- **Benefit**: GPT can optimize all API parameters for your exact needs
 
-**Context Specification:**
-- Provide detailed use case information
-- **Example**: "Background music for coding with mild anxiety, need 2 hours, mostly instrumental"
-- **Benefit**: AI can optimize all parameters for specific situation
+**Describe the Use Case:**
+- ✅ Good: "Background music for coding with mild anxiety, need 90 minutes, mostly instrumental"
+- ❌ Vague: "Relaxing music"
+- **Benefit**: Enables therapeutic curation techniques and appropriate search strategies
 
-**Quality Requirements:**
-- Specify standards upfront
-- **Example**: "No duplicates, document all tracks with venue info, validate flow between phases"
-- **Benefit**: Ensures playlist meets professional standards
+**Specify Quality Standards:**
+- ✅ Good: "No duplicates, show me the track list, explain your choices"
+- ❌ Vague: "Just make it good"
+- **Benefit**: Ensures professional-quality curation with documentation
 
-### Platform Optimization
+### Leveraging API Capabilities
 
-**Market Specification:**
-- Include regional preferences when relevant
-- **Example**: "US market focus", "UK-only artists", "Japanese city pop"
-- **Benefit**: Ensures track availability and cultural appropriateness
+**Phased Requests:**
+- **Pattern**: "Create a 3-phase workout playlist: warm-up (10 min), intense (30 min), cool-down (15 min)"
+- **GPT Action**: Execute distinct searches for each phase, maintain energy progression
+- **Result**: Intentional flow matching your activity needs
 
-**Duration Precision:**
-- Be specific about timing needs
-- **Example**: "Exactly 45 minutes for my commute", "3-hour event with breaks"
-- **Benefit**: Perfect fit for time constraints
+**Discovery + Favorites:**
+- **Pattern**: "Mix my top artists with similar new discoveries"
+- **GPT Action**: Call `getUserTopArtists`, then search for related artists
+- **Result**: Personalized discovery rooted in your taste
 
-**Energy Management:**
-- Describe desired progression clearly
-- **Example**: "Start energetic (7/10), plateau at 5/10, end at 3/10"
-- **Benefit**: Precise energy flow matching your needs
+**Cultural Authenticity:**
+- **Pattern**: "Authentic 1970s British rock, no modern remasters"
+- **GPT Action**: Apply `year:1970-1979`, `uk`, `-remaster` filters in searches
+- **Result**: Period-accurate, culturally authentic playlist
+
+### Iteration and Refinement
+
+**Start Broad, Refine Later:**
+1. "Create a chill evening playlist" → GPT creates initial version
+2. "Make it more jazzy" → GPT adds jazz searches, maintains chill mood
+3. "Add some piano instrumentals" → GPT searches for piano tracks
+4. "Perfect, now add cover art" → GPT generates and uploads art
+
+**API Efficiency**: Each refinement is a targeted API operation, not recreation from scratch
+
+### Market and Region Optimization
+
+**Specify Geographic Context:**
+- **Pattern**: "Japanese city pop playlist, Japan market"
+- **GPT Action**: Use `market=JP` parameter in API calls
+- **Result**: Authentic regional catalog access, culturally appropriate selections
+
+**Language Preferences:**
+- **Pattern**: "Latin music with Spanish lyrics only"
+- **GPT Action**: Search queries include language indicators, verify in track data
+- **Result**: Linguistically consistent playlist
 
 ---
 
-## 📚 Additional Resources
-
-**For more information, see:**
-- `SPOTIFY_GPT_INSTRUCTIONS.md` - Complete workflow details
-- `INSTRUCTIONS.md` - Core behavioral guidelines
-- `COVER_ART_LLM_GUIDE.md` - Cover art generation strategies
-
----
-
-*Last Updated: October 29, 2025*
-*Part of the Spotify Skills for Claude project*
+*Last Updated: October 30, 2025*
+*Spotify Custom GPT - Advanced Playlist Curation Strategies*
+*Optimized for conversational API-based playlist creation*
