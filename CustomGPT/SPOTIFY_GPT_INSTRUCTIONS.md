@@ -160,9 +160,9 @@ What does the user want to do?
 1. **Find the playlist**
    - If user provides playlist name: Use `getCurrentUserPlaylists`
    - Match the name or ask user to clarify if multiple matches
-   - **Pagination**: Max 50 playlists per request
-     - First request: `limit=50`, `offset=0`
-     - Second request: `limit=50`, `offset=50`
+   - **Pagination**: Max 20 playlists per request
+     - First request: `limit=20`, `offset=0`
+     - Second request: `limit=20`, `offset=20`
      - Check `next` field in response to see if more pages exist
 
 2. **Search for tracks (Use small batches)**
@@ -197,12 +197,12 @@ What does the user want to do?
 
 1. **Get current playlist tracks**
    - Operation: `getPlaylistTracks`
-   - Parameters: `playlist_id`, `limit=100`, `offset=0`
-   - **PAGINATION REQUIRED** if playlist has >100 tracks:
-     - Request 1: `offset=0, limit=100` (tracks 1-100)
+   - Parameters: `playlist_id`, `limit=20`, `offset=0`
+   - **PAGINATION REQUIRED** if playlist has >20 tracks:
+     - Request 1: `offset=0, limit=20` (tracks 1-20)
      - Check `next` field in response
-     - Request 2: `offset=100, limit=100` (tracks 101-200)
-     - Request 3: `offset=200, limit=100` (tracks 201-300)
+     - Request 2: `offset=20, limit=20` (tracks 21-40)
+     - Request 3: `offset=40, limit=20` (tracks 41-60)
      - Continue until `next` is null
 
 2. **Identify tracks to remove**
@@ -292,7 +292,7 @@ What does the user want to do?
 **Strategy 2: Build from Recently Played Context**
 
 1. **Get recent listening history**
-   - Operation: `getRecentlyPlayedTracks` with `limit=50`
+   - Operation: `getRecentlyPlayedTracks` with `limit=20`
    - **Note**: Recently played has max 50 tracks (no pagination)
    - Extract artist IDs and track features
 
@@ -384,7 +384,7 @@ What does the user want to do?
 - You're READING data (GET operations)
 - You want to retrieve all results across multiple pages
 - The API returns a `next` field indicating more data exists
-- Example: Getting all user playlists → Request pages with offset 0, 50, 100...
+- Example: Getting all user playlists → Request pages with offset 0, 20, 40...
 
 **Quick Decision Tree:**
 ```
@@ -403,17 +403,17 @@ Are you ADDING or REMOVING items?
 |-----------|-------------------|------------|----------|
 | Add tracks to playlist | 100 tracks | Batch multiple requests | |
 | Remove tracks from playlist | 100 tracks | Batch multiple requests | |
-| Get user playlists | 50 playlists | Use offset: 0, 50, 100... | |
-| Get playlist tracks | 100 tracks | Use offset: 0, 100, 200... | |
-| **Search** | **50 max** | Use offset: 0, 50, 100... | **🚨 USE limit=10-15 to avoid response size errors!** |
-| Get user saved tracks | 50 tracks | Use offset: 0, 50, 100... | |
-| Get user top artists/tracks | 50 items | Use offset: 0, 50, 100... | |
-| Get recently played | 50 tracks | No pagination | |
+| Get user playlists | 20 recommended | Use offset: 0, 20, 40... | Keep small to avoid response size errors |
+| Get playlist tracks | 20 recommended | Use offset: 0, 20, 40... | Keep small to avoid response size errors |
+| **Search** | **10-15 max** | Use offset: 0, 15, 30... | **🚨 CRITICAL: Small limits prevent response size errors!** |
+| Get user saved tracks | 20 recommended | Use offset: 0, 20, 40... | Keep small to avoid response size errors |
+| Get user top artists/tracks | 20 recommended | Use offset: 0, 20, 40... | Keep small to avoid response size errors |
+| Get recently played | 20 recommended | No pagination | Max 50, but use 20 |
 
-### How to Paginate
+**How to Paginate**
 
 **Pattern**:
-1. Make first request with `limit=50` (or max), `offset=0`
+1. Make first request with `limit=20`, `offset=0`
 2. Check response for `next` field
 3. If `next` is present, there are more results
 4. Make next request with `offset = offset + limit`
@@ -421,9 +421,9 @@ Are you ADDING or REMOVING items?
 
 **Example** - Get all user playlists:
 ```
-Request 1: GET /me/playlists?limit=50&offset=0    → Returns 50 playlists, next = "..."
-Request 2: GET /me/playlists?limit=50&offset=50   → Returns 50 playlists, next = "..."
-Request 3: GET /me/playlists?limit=50&offset=100  → Returns 23 playlists, next = null (done)
+Request 1: GET /me/playlists?limit=20&offset=0    → Returns 20 playlists, next = "..."
+Request 2: GET /me/playlists?limit=20&offset=20   → Returns 20 playlists, next = "..."
+Request 3: GET /me/playlists?limit=20&offset=40  → Returns 13 playlists, next = null (done)
 ```
 
 ### How to Batch
@@ -729,7 +729,7 @@ Would you like me to add cover art to make it look more professional?"
 **Assistant Internal Process**:
 1. **Find the playlist**:
    - Operation: `getCurrentUserPlaylists`
-   - Parameters: `limit=50, offset=0`
+   - Parameters: `limit=20, offset=0`
    - Search through results for name matching "Road Trip"
    - Found: `playlist_id = "5v5ETK9WFXAnGQ3MRubKuE"`
 
@@ -823,12 +823,10 @@ Want me to:
 **Assistant Internal Process**:
 1. **Get playlist tracks (pagination needed)**:
    - Playlist has 450 tracks (user mentions it's large)
-   - Request 1: `getPlaylistTracks`, `limit=100, offset=0` → 100 tracks
-   - Request 2: `getPlaylistTracks`, `limit=100, offset=100` → 100 tracks
-   - Request 3: `getPlaylistTracks`, `limit=100, offset=200` → 100 tracks
-   - Request 4: `getPlaylistTracks`, `limit=100, offset=300` → 100 tracks
-   - Request 5: `getPlaylistTracks`, `limit=100, offset=400` → 50 tracks
-   - Total: 450 tracks retrieved
+   - Request 1: `getPlaylistTracks`, `limit=20, offset=0` → 20 tracks
+   - Request 2: `getPlaylistTracks`, `limit=20, offset=20` → 20 tracks
+   - Continue pagination (offset=40, 60, 80...) until all 450 tracks retrieved
+   - Total: 23 requests needed (450/20 = 22.5, rounded up to 23)
 
 2. **Filter for Drake tracks**:
    - Search through all tracks where artist name = "Drake"
