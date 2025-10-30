@@ -71,7 +71,7 @@
       "post": {
         "operationId": "createPlaylist",
         "summary": "Create a playlist",
-        "description": "Create playlist with sensible defaults: public=true unless user says private, auto-generate description. Returns playlist_id for adding tracks. Save the playlist_id and add tracks immediately after creation.",
+        "description": "Create playlist with sensible defaults: public=false (private) unless user says public, auto-generate description. Returns playlist_id for adding tracks. Save the playlist_id and add tracks immediately after creation. When selecting tracks, avoid songs over 6 minutes long to maintain playlist flow.",
         "requestBody": {
           "required": true,
           "content": {
@@ -90,8 +90,8 @@
                   },
                   "public": {
                     "type": "boolean",
-                    "default": true,
-                    "description": "If true, playlist will be public"
+                    "default": false,
+                    "description": "If true, playlist will be public. Defaults to false (private)."
                   }
                 }
               }
@@ -455,7 +455,7 @@
       "post": {
         "operationId": "addTracksToPlaylist",
         "summary": "Add tracks to playlist",
-        "description": "Add tracks to a playlist using Spotify URIs (spotify:track:{id}). Max 100 tracks per request. Extract track IDs from search results and convert to URI format before adding.",
+        "description": "Add tracks to a playlist using Spotify URIs (spotify:track:{id}). Max 100 tracks per request. Extract track IDs from search results and convert to URI format before adding. Prefer tracks under 6 minutes to maintain playlist flow and engagement.",
         "parameters": [
           {
             "name": "playlist_id",
