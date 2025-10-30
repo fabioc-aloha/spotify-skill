@@ -40,7 +40,7 @@
       "get": {
         "operationId": "getCurrentUserPlaylists",
         "summary": "Get current user's playlists",
-        "description": "Get a list of the playlists owned or followed by the current user. PAGINATION: Maximum 50 items per request. For more results, increment offset by limit value (e.g., offset=0, then offset=50, offset=100). Check if response has 'next' field to determine if more pages exist.",
+        "description": "Get a list of the playlists owned or followed by the current user. PAGINATION REQUIRED: If user has >50 playlists, you MUST paginate. Step 1: Request with offset=0, limit=50. Step 2: Check response for 'next' field. Step 3: If 'next' exists, make another request with offset=50. Step 4: Repeat incrementing offset by 50 until 'next' is null.",
         "parameters": [
           {
             "name": "limit",
@@ -59,7 +59,7 @@
               "type": "integer",
               "default": 0
             },
-            "description": "Index of first playlist to return. Use for pagination (0, 50, 100, etc.)"
+            "description": "Index of first playlist to return. For pagination: Start with 0, then increment by limit (0→50→100→150...) until 'next' field is null in response."
           }
         ],
         "responses": {
@@ -109,7 +109,7 @@
       "get": {
         "operationId": "getUserSavedTracks",
         "summary": "Get user's saved tracks",
-        "description": "Get user's library of saved/liked tracks. Returns track details with save timestamps. Supports pagination (max 50 per request). Use to build playlists from user's favorites.",
+        "description": "Get user's library of saved/liked tracks. PAGINATION REQUIRED: If user has >50 saved tracks, you MUST paginate. Step 1: Request offset=0, limit=50. Step 2: Check 'next' field in response. Step 3: If 'next' exists, request offset=50. Step 4: Continue until 'next' is null to get all saved tracks.",
         "parameters": [
           {
             "name": "limit",
@@ -128,7 +128,7 @@
               "type": "integer",
               "default": 0
             },
-            "description": "Index of first track to return. Use for pagination (0, 50, 100, etc.)"
+            "description": "Index of first track to return. For pagination: Start with 0, then increment by limit (0→50→100→150...) until 'next' field is null."
           }
         ],
         "responses": {
@@ -204,7 +204,7 @@
       "get": {
         "operationId": "getUserTopArtists",
         "summary": "Get user's top artists",
-        "description": "Get user's most listened-to artists over time periods (short=4 weeks, medium=6 months, long=years). Max 50 artists per request. Essential for building personalized playlists.",
+        "description": "Get user's most listened-to artists over time periods (short=4 weeks, medium=6 months, long=years). PAGINATION: If requesting >50 artists, paginate with offset. Essential for building personalized playlists.",
         "parameters": [
           {
             "name": "time_range",
@@ -247,7 +247,7 @@
       "get": {
         "operationId": "getUserTopTracks",
         "summary": "Get user's top tracks",
-        "description": "Get user's most played tracks over time periods. Returns track details with play counts. Use to seed playlists with user's proven favorites.",
+        "description": "Get user's most played tracks over time periods. PAGINATION: If requesting >50 tracks, paginate with offset. Use to seed playlists with user's proven favorites.",
         "parameters": [
           {
             "name": "time_range",
@@ -408,7 +408,7 @@
       "get": {
         "operationId": "getPlaylistTracks",
         "summary": "Get playlist tracks",
-        "description": "Get full details of the tracks in a playlist. PAGINATION: Maximum 100 items per request. For playlists with more tracks, use offset parameter. Increment offset by limit (e.g., offset=0, then offset=100, offset=200). Check response 'next' field for more pages.",
+        "description": "Get full details of the tracks in a playlist. PAGINATION REQUIRED: Playlists with >100 tracks need pagination. Step 1: Request offset=0, limit=100. Step 2: Check 'next' field. Step 3: If 'next' exists, request offset=100. Step 4: Repeat (offset=200, 300...) until 'next' is null.",
         "parameters": [
           {
             "name": "playlist_id",
@@ -435,7 +435,7 @@
               "type": "integer",
               "default": 0
             },
-            "description": "Index of first track to return. Use for pagination (0, 100, 200, etc.)"
+            "description": "Index of first track to return. For pagination: Start with 0, then increment by limit (0→100→200→300...) until 'next' field is null."
           }
         ],
         "responses": {
@@ -540,7 +540,7 @@
       "get": {
         "operationId": "search",
         "summary": "Search for items",
-        "description": "Search Spotify for tracks, artists, albums, or playlists. Returns results with IDs that can be converted to URIs (spotify:track:{id}). CRITICAL: Use limit=10-15 to avoid response size errors. For more tracks, make multiple focused searches with different keywords rather than one large search.",
+        "description": "Search Spotify for tracks, artists, albums, or playlists. CRITICAL: Use limit=10-15 to avoid response size errors. PAGINATION: For more results beyond limit, increment offset (e.g., offset=0, then offset=15, offset=30). Check 'next' field to determine if more results exist. For more tracks, make multiple focused searches with different keywords rather than one large search.",
         "parameters": [
           {
             "name": "q",
@@ -577,7 +577,7 @@
               "type": "integer",
               "default": 0
             },
-            "description": "Index of first result to return. Use for pagination (0, 50, 100, etc.)"
+            "description": "Index of first result to return. For pagination: Start with 0, increment by limit (0→15→30→45...) until 'next' is null. Check 'next' field in response."
           }
         ],
         "responses": {

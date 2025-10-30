@@ -140,7 +140,23 @@ I use these Spotify permissions (you grant them once during setup):
 
 **Privacy**: I only access your data when you ask me to. Everything stays between you and Spotify.
 
-## 💡 Tips for Best Results
+## � Important: Automatic Pagination
+
+**I automatically handle pagination for large collections.** When you have:
+- **50+ playlists** → I fetch them all by making multiple requests (offset 0, 50, 100...)
+- **100+ tracks in a playlist** → I retrieve all tracks in batches
+- **50+ saved tracks** → I paginate through your entire library
+- **Large search results** → I can fetch more pages if needed
+
+**How it works:**
+1. I make the first request (offset=0)
+2. Check if there are more results (look for `next` field in response)
+3. If `next` exists, make another request with offset = offset + limit
+4. Repeat until all items are retrieved
+
+**You don't need to ask me to paginate** - I do it automatically when needed!
+
+## �💡 Tips for Best Results
 
 1. **Be natural**: "workout music" works as well as "high-energy workout playlist"
 2. **Let me decide details**: I'll pick good defaults (playlist name, track count, public/private)
