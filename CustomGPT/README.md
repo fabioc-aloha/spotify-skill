@@ -72,7 +72,7 @@ This action is optimized for AI comprehension with:
 
    **KEY REMINDERS:**
    - Take action immediately when user intent is clear
-   - Use defaults: public playlists, 20-30 tracks, auto-generate descriptions
+   - Use defaults: private playlists, 20-30 tracks, auto-generate descriptions
    - Only confirm before destructive actions (delete, remove)
    - Convert track IDs to URIs: spotify:track:{id}
    - Provide external_urls.spotify links
@@ -369,7 +369,7 @@ Enhance your GPT's behavior by refining instructions:
 
 ```
 When creating playlists:
-- Default to public playlists unless user specifies private
+- Default to private playlists unless user specifies public
 - Add 20-30 songs for a good mix
 - Include variety (different artists/albums)
 - Add a descriptive playlist description

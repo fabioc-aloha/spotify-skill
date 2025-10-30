@@ -236,7 +236,7 @@ API Call: createPlaylist
 Body: {
   "name": "[Generated from user intent]",
   "description": "[Compelling description < 300 chars]",
-  "public": true  // Unless user specifies private
+  "public": false  // Private unless user specifies public
 }
 Result: Save playlist_id for subsequent operations
 ```
@@ -282,7 +282,7 @@ Result: 202 Accepted (async processing)
 1. **Create Playlist**
    - Name: "🎸 Led Zeppelin - The Complete 70s - Alex Method (120 minutes)"
    - Description: "Deep dive into Led Zeppelin's legendary 1970s catalog, from blues-rock foundations to epic studio masterpieces"
-   - Public: true
+   - Public: false
 
 2. **Execute Phased Searches** (3 phases)
    - **Early Era** (40 min): `search?q=artist:Led Zeppelin year:1969-1972 -cover -live&type=track&limit=12`
@@ -317,7 +317,7 @@ Result: 202 Accepted (async processing)
 2. **Create Playlist**
    - Name: "🌅 Dawn to Dusk - Alex Method (Curated)"
    - Description: "A carefully crafted emotional journey from quiet awakening through afternoon energy to evening reflection"
-   - Public: true
+   - Public: false
 
 3. **Curate & Search for Specific Tracks**
 
