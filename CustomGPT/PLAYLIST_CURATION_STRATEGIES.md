@@ -324,7 +324,7 @@ Result: 202 Accepted (async processing)
    - Public: false
 
 3. **Plan Complete Track List FIRST** (Do NOT search yet)
-   
+
    **Phase 1: Awakening**
    - Nick Drake - "River Man" (*Five Leaves Left*, 1969)
    - Mazzy Star - "Fade Into You" (*So Tonight That I Might See*, 1993)
@@ -347,7 +347,7 @@ Result: 202 Accepted (async processing)
    - Search 4: `q=15 Step artist:Radiohead album:In Rainbows&type=track&limit=1` → Extract track ID
    - Search 5: `q=Wake Up artist:Arcade Fire album:Funeral&type=track&limit=1` → Extract track ID
    - Search 6: `q=Holocene artist:Bon Iver&type=track&limit=1` → Extract track ID
-   
+
 5. **Add ALL Tracks in Single Batch Operation**
    - Convert all track IDs to URIs: `["spotify:track:{id1}", "spotify:track:{id2}", ...]`
    - Call `addTracksToPlaylist` ONCE with all 6 URIs in order

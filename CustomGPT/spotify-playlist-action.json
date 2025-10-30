@@ -649,6 +649,75 @@
         }
       }
     },
+    "/artists/{id}/related-artists": {
+      "get": {
+        "operationId": "getRelatedArtists",
+        "summary": "Get related artists",
+        "description": "Get artists similar to a given artist. Returns up to 20 related artists based on Spotify's artist similarity analysis. Use to discover new artists similar to user's favorites or build 'If you like X, try Y' recommendations.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Spotify ID of the artist"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of related artists with genres, popularity, and follower counts"
+          }
+        }
+      }
+    },
+    "/audio-features/{id}": {
+      "get": {
+        "operationId": "getAudioFeatures",
+        "summary": "Get audio features for a track",
+        "description": "Get detailed audio analysis for a track including danceability, energy, valence (positivity), acousticness, instrumentalness, tempo (BPM), key, mode, and more. Use to filter tracks by mood, energy level, or activity suitability. Values are 0.0-1.0 except tempo (BPM) and key (0-11).",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Spotify track ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Audio features object with danceability, energy, key, loudness, mode, speechiness, acousticness, instrumentalness, liveness, valence, tempo, duration_ms, time_signature"
+          }
+        }
+      }
+    },
+    "/audio-features": {
+      "get": {
+        "operationId": "getMultipleAudioFeatures",
+        "summary": "Get audio features for multiple tracks",
+        "description": "Get audio features for up to 100 tracks in a single request. More efficient than calling getAudioFeatures repeatedly. Use to analyze search results or playlist tracks for filtering by energy, mood, tempo, etc.",
+        "parameters": [
+          {
+            "name": "ids",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Comma-separated list of Spotify track IDs (max 100). Example: '4iV5W9uYEdYUVa79Axb7Rh,1301WleyT98MSxVHPZCA6M'"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of audio features objects in same order as requested IDs"
+          }
+        }
+      }
+    },
     "/me/player": {
       "get": {
         "operationId": "getPlaybackState",

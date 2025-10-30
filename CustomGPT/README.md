@@ -7,6 +7,7 @@ This directory contains an OpenAPI specification that allows OpenAI Custom GPTs 
 This Custom GPT Action enables your GPT to:
 - ✅ Create, read, update, and delete playlists
 - ✅ Add and remove tracks from playlists
+- ✅ Remove duplicate tracks automatically
 - ✅ Search for tracks, artists, albums, and playlists
 - ✅ Get artist information and top tracks
 - ✅ Get music recommendations
