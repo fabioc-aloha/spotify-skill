@@ -375,7 +375,7 @@
       "put": {
         "operationId": "uploadPlaylistCoverImage",
         "summary": "Upload playlist cover image",
-        "description": "Upload custom cover art directly to a playlist via API. Image must be: 1) Square JPEG (640x640px min, equal width/height), 2) Base64 encoded, 3) Max 256KB, 4) Data URL prefix removed. After generating cover art, convert to base64 and upload. User must have ugc-image-upload scope.",
+        "description": "Upload custom cover art to playlist. CRITICAL FORMAT: 1) Request body MUST be raw base64 string (no JSON wrapper, no quotes), 2) Content-Type MUST be image/jpeg, 3) Remove 'data:image/jpeg;base64,' prefix if present, 4) Image must be square JPEG (min 640x640px, equal width/height), 5) Max 256KB. User must have ugc-image-upload scope.",
         "parameters": [
           {
             "name": "playlist_id",
@@ -390,11 +390,11 @@
         "requestBody": {
           "required": true,
           "content": {
-            "text/plain": {
+            "image/jpeg": {
               "schema": {
                 "type": "string",
-                "description": "Base64 encoded JPEG image data WITHOUT the 'data:image/jpeg;base64,' prefix. Image must be square with equal width and height (minimum 640x640px recommended).",
-                "example": "/9j/4AAQSkZJRgABAQEAYABgAAD..."
+                "format": "byte",
+                "description": "CRITICAL: Send as RAW base64 string in request body (NOT as JSON object, NOT wrapped in quotes). Example body: /9j/4AAQSkZJRgABAQEAYABgAAD... (just the base64 string, nothing else). Must NOT include 'data:image/jpeg;base64,' prefix."
               }
             }
           }
@@ -676,7 +676,7 @@
       "get": {
         "operationId": "getAudioFeatures",
         "summary": "Get audio features for a track",
-        "description": "Get detailed audio analysis for a track including danceability, energy, valence (positivity), acousticness, instrumentalness, tempo (BPM), key, mode, and more. Use to filter tracks by mood, energy level, or activity suitability. Values are 0.0-1.0 except tempo (BPM) and key (0-11).",
+        "description": "Get detailed audio analysis for a track including danceability, energy, valence (positivity), acousticness, instrumentalness, tempo (BPM), key, mode, and more. Use to filter tracks by mood, energy level, or activity suitability. Values are 0.0-1.0 except tempo (BPM) and key (0-11). REQUIRES: user-read-private scope. If 403 error occurs, user must re-authenticate.",
         "parameters": [
           {
             "name": "id",
@@ -691,6 +691,9 @@
         "responses": {
           "200": {
             "description": "Audio features object with danceability, energy, key, loudness, mode, speechiness, acousticness, instrumentalness, liveness, valence, tempo, duration_ms, time_signature"
+          },
+          "403": {
+            "description": "Missing user-read-private scope. User must reset authentication and reconnect."
           }
         }
       }
@@ -699,7 +702,7 @@
       "get": {
         "operationId": "getMultipleAudioFeatures",
         "summary": "Get audio features for multiple tracks",
-        "description": "Get audio features for up to 100 tracks in a single request. More efficient than calling getAudioFeatures repeatedly. Use to analyze search results or playlist tracks for filtering by energy, mood, tempo, etc.",
+        "description": "Get audio features for up to 100 tracks in a single request. More efficient than calling getAudioFeatures repeatedly. Use to analyze search results or playlist tracks for filtering by energy, mood, tempo, etc. REQUIRES: user-read-private scope. If 403 error occurs, user must re-authenticate.",
         "parameters": [
           {
             "name": "ids",
@@ -714,6 +717,9 @@
         "responses": {
           "200": {
             "description": "Array of audio features objects in same order as requested IDs"
+          },
+          "403": {
+            "description": "Missing user-read-private scope. User must reset authentication and reconnect."
           }
         }
       }
