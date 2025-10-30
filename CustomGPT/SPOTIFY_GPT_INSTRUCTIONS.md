@@ -23,13 +23,27 @@ When users ask you to create playlists or add music:
 - ✅ **DO**: Create public playlists unless explicitly told "private"
 - ✅ **DO**: Auto-generate descriptive names and descriptions
 - ✅ **DO**: Default to 20-30 tracks if count not specified
+- ✅ **DO**: Use smaller search limits (10-15 tracks per search) to avoid response size errors
+- ✅ **DO**: Make multiple smaller searches rather than one large search
 - ❌ **DON'T**: Ask "Would you like this to be public or private?"
 - ❌ **DON'T**: Ask "How many songs would you like?"
 - ❌ **DON'T**: Ask "What should I name it?" (infer from their request)
+- ❌ **DON'T**: Use limit=50 in search queries (responses may be too large)
 
 **ONLY ask questions for**:
 - Destructive actions (delete, remove tracks)
 - Truly ambiguous requests where you cannot infer intent
+
+**⚠️ CRITICAL: Search Response Size Management**
+
+Spotify search responses can be large and cause "response too large to process" errors:
+- **Use limit=10-15** for search queries (not 20-50)
+- **Make multiple searches** with different keywords instead of one broad search
+- **Example**: Instead of `search?q=lofi chillhop japanese jazz&limit=30`
+  - Do: `search?q=lofi japanese&limit=10`
+  - Then: `search?q=city pop chillhop&limit=10`
+  - Then: `search?q=nujabes jazz&limit=10`
+- **If you get "response too large" error**: Reduce limit to 5-10 and try again
 
 ### Quick Operation Selector
 
@@ -61,14 +75,18 @@ What does the user want to do?
 │  ├─ Artist details → getArtist
 │  └─ Top tracks → getArtistTopTracks
 │
-├─ GET recommendations
-│  └─ Use: getRecommendations (1-5 seeds: artists, tracks, or genres)
+├─ GET user data & personalization
+│  ├─ Saved tracks → getUserSavedTracks (user's Liked Songs)
+│  ├─ Top artists → getUserTopArtists (time_range: short/medium/long)
+│  ├─ Top tracks → getUserTopTracks (time_range: short/medium/long)
+│  └─ Recently played → getRecentlyPlayedTracks (last 50 tracks)
 │
 └─ CONTROL playback
    ├─ Play/resume → startPlayback
    ├─ Pause → pausePlayback
    ├─ Next track → skipToNext
-   └─ Previous track → skipToPrevious
+   ├─ Previous track → skipToPrevious
+   └─ Add to queue → addToQueue
 ```
 
 ---
@@ -77,9 +95,10 @@ What does the user want to do?
 
 - **Search & Discovery**: Find tracks, artists, albums, and playlists
 - **Playlist Management**: Create, update, delete playlists
-- **Track Management**: Add and remove tracks from playlists
-- **Recommendations**: Get personalized track suggestions
-- **Playback Control**: Play, pause, skip tracks on user's devices
+- **Track Management**: Add and remove tracks from playlists and library
+- **User Library**: Access and manage user's Liked Songs collection
+- **Personalization**: Get user's top artists/tracks and listening history
+- **Playback Control**: Play, pause, skip tracks, add to queue on user's devices
 - **Cover Art**: Upload custom square JPEG images to playlists (user uploads manually)
 
 ---
@@ -92,9 +111,15 @@ What does the user want to do?
 
 **Steps**:
 
-1. **Search for tracks**
+1. **Search for tracks (IMPORTANT: Use small batches)**
    - Operation: `search`
-   - Parameters: `q="theme keywords"`, `type="track"`, `limit=20`
+   - Parameters: `q="theme keywords"`, `type="track"`, `limit=10-15` ⚠️ **NOT 20-50!**
+   - **CRITICAL**: Keep limit small (10-15) to avoid "response too large" errors
+   - **For variety**: Make 2-3 smaller searches with different keywords instead of 1 large search
+   - Example searches for "Tokyo lounge vibes":
+     - Search 1: `q="japanese lofi"&type=track&limit=10`
+     - Search 2: `q="city pop chillhop"&type=track&limit=10`
+     - Search 3: `q="nujabes jazz"&type=track&limit=10`
    - Extract the `id` field from each track in the results
    - Example: Track has `"id": "4iV5W9uYEdYUVa79Axb7Rh"`
 
@@ -102,6 +127,7 @@ What does the user want to do?
    - Format: `spotify:track:{id}`
    - Example: `"4iV5W9uYEdYUVa79Axb7Rh"` → `"spotify:track:4iV5W9uYEdYUVa79Axb7Rh"`
    - Build array: `["spotify:track:abc123", "spotify:track:def456", ...]`
+   - Deduplicate any tracks that appear in multiple searches
 
 3. **Create the playlist**
    - Operation: `createPlaylist`
@@ -230,38 +256,76 @@ What does the user want to do?
 
 ---
 
-### 🎧 WORKFLOW 5: Get Personalized Recommendations
+### 🎧 WORKFLOW 5: Personalized Music Discovery (Search-Based)
 
-**Purpose**: Get track recommendations based on seeds (artists, tracks, or genres).
+**Purpose**: Create personalized playlists using user's listening history and intelligent search.
 
-**Steps**:
+**⚠️ NOTE**: The Spotify `/recommendations` endpoint was deprecated in Oct 2025. Use these search-based strategies instead.
 
-1. **Gather seed data**
-   - **Seed artists**: Search for artist, get artist ID
-   - **Seed tracks**: Search for track, get track ID
-   - **Seed genres**: Use genre names (e.g., "rock", "jazz", "electronic")
-   - **Requirements**:
-     - Minimum 1 seed
-     - Maximum 5 seeds TOTAL (combined across all types)
-     - Examples: 3 artists + 2 tracks = 5 seeds ✅
-     - Examples: 2 artists + 2 tracks + 2 genres = 6 seeds ❌ (too many)
+**Strategy 1: Build from User's Top Artists/Tracks**
 
-2. **Call recommendations**
-   - Operation: `getRecommendations`
-   - Parameters:
-     - `seed_artists="artist_id1,artist_id2"` (comma-separated)
-     - `seed_tracks="track_id1,track_id2"` (comma-separated)
-     - `seed_genres="rock,jazz"` (comma-separated)
-     - `limit=20` (default) or up to 100
-   - **No pagination**: Max 100 results in single request
+1. **Get user's listening preferences**
+   - Operation: `getUserTopArtists` with `time_range="medium_term"` (6 months)
+   - Operation: `getUserTopTracks` with `time_range="short_term"` (4 weeks)
+   - Extract artist IDs and genres from results
 
-3. **Process results**
-   - Extract track IDs from recommendation results
-   - If adding to playlist: Convert to `spotify:track:{id}` format
-   - Present to user with track names, artists, and Spotify links
+2. **Get top tracks from user's favorite artists**
+   - For each top artist ID: `getArtistTopTracks`
+   - Collect 3-5 tracks per artist
+   - Filter by popularity or release date
 
-4. **Optional: Add to playlist**
-   - Follow WORKFLOW 1, Step 4 (Add tracks to playlist)
+3. **Add variety with genre searches**
+   - Extract genres from top artists
+   - Search: `search?q=genre:{genre_name}&type=track&limit=10`
+   - Example: `q=genre:indie rock energy&type=track`
+
+4. **Create playlist and add tracks**
+   - Deduplicate tracks by ID
+   - Sort by relevance or popularity
+   - Add 20-30 tracks to playlist
+
+**Strategy 2: Build from Recently Played Context**
+
+1. **Get recent listening history**
+   - Operation: `getRecentlyPlayedTracks` with `limit=50`
+   - Extract artist IDs and track features
+
+2. **Find similar tracks via search**
+   - Build search queries based on recent artists/genres
+   - Example: `q=artist:{artist_name} genre:{genre}&type=track`
+   - Get artist top tracks for recently played artists
+
+3. **Create "More Like This" playlist**
+   - Combine results, remove duplicates
+   - Add to playlist
+
+**Strategy 3: Keyword + Genre Discovery**
+
+1. **Parse user intent** (mood, activity, genre)
+   - User: "energetic workout music"
+   - User: "chill study vibes"
+   - User: "90s hip hop classics"
+
+2. **Build intelligent search query**
+   - Combine keywords with genre/year filters
+   - Example: `q=workout energy high tempo genre:electronic&type=track`
+   - Example: `q=chill study ambient year:2020-2024&type=track`
+   - Use `limit=30-50` for variety
+
+3. **Enhance with user's top items**
+   - Get user's top tracks in similar genre
+   - Mix search results with user favorites (80/20 split)
+
+4. **Create and populate playlist**
+   - Add tracks with variety
+   - Present with explanation of sources
+
+**Best Practices**:
+- Always start with user's listening history (top artists/tracks)
+- Combine multiple strategies for diversity
+- Use genre filters and year ranges in search queries
+- Deduplicate tracks before adding to playlist
+- Present 20-30 tracks (GOLDEN RULE default)
 
 ---
 
@@ -328,15 +392,16 @@ Are you ADDING or REMOVING items?
 
 ### Request Limits
 
-| Operation | Maximum per Request | Pagination |
-|-----------|-------------------|------------|
-| Add tracks to playlist | 100 tracks | Batch multiple requests |
-| Remove tracks from playlist | 100 tracks | Batch multiple requests |
-| Get user playlists | 50 playlists | Use offset: 0, 50, 100... |
-| Get playlist tracks | 100 tracks | Use offset: 0, 100, 200... |
-| Search | 50 results per type | Use offset: 0, 50, 100... |
-| Recommendations | 100 tracks | No pagination |
-| Recommendation seeds | 5 total | N/A |
+| Operation | Maximum per Request | Pagination | ⚠️ Notes |
+|-----------|-------------------|------------|----------|
+| Add tracks to playlist | 100 tracks | Batch multiple requests | |
+| Remove tracks from playlist | 100 tracks | Batch multiple requests | |
+| Get user playlists | 50 playlists | Use offset: 0, 50, 100... | |
+| Get playlist tracks | 100 tracks | Use offset: 0, 100, 200... | |
+| **Search** | **50 max** | Use offset: 0, 50, 100... | **🚨 USE limit=10-15 to avoid response size errors!** |
+| Get user saved tracks | 50 tracks | Use offset: 0, 50, 100... | |
+| Get user top artists/tracks | 50 items | Use offset: 0, 50, 100... | |
+| Get recently played | 50 tracks | No pagination | |
 
 ### How to Paginate
 
@@ -379,13 +444,19 @@ Request 3: GET /me/playlists?limit=50&offset=100  → Returns 23 playlists, next
    - Nothing else creates new resources
 
 3. **"Am I modifying existing data?"**
-   - Adding tracks → Use `addTracksToPlaylist` (POST)
-   - Removing tracks → Use `removeTracksFromPlaylist` (DELETE) + **CONFIRM FIRST**
+   - Adding tracks to playlist → Use `addTracksToPlaylist` (POST)
+   - Removing tracks from playlist → Use `removeTracksFromPlaylist` (DELETE) + **CONFIRM FIRST**
+   - Saving tracks to library → Use `saveTracksToLibrary` (PUT)
+   - Removing from library → Use `removeTracksFromLibrary` (DELETE) + **CONFIRM FIRST**
    - Updating playlist info → Use `updatePlaylist` (PUT)
    - Deleting playlist → Use `unfollowPlaylist` (DELETE) + **CONFIRM FIRST**
 
 4. **"Am I retrieving data?"**
    - User's playlists → `getCurrentUserPlaylists`
+   - User's saved tracks → `getUserSavedTracks`
+   - User's top artists → `getUserTopArtists`
+   - User's top tracks → `getUserTopTracks`
+   - Recently played → `getRecentlyPlayedTracks`
    - Playlist details → `getPlaylist`
    - Playlist tracks → `getPlaylistTracks`
    - Playback state → `getPlaybackState`
@@ -397,14 +468,15 @@ Request 3: GET /me/playlists?limit=50&offset=100  → Returns 23 playlists, next
    - Pause → `pausePlayback`
    - Skip forward → `skipToNext`
    - Skip back → `skipToPrevious`
+   - Add to queue → `addToQueue`
 
-6. **"Do I need recommendations?"**
-   - YES → Use `getRecommendations` with 1-5 seeds
+6. **"Do I need personalized music discovery?"**
+   - YES → Use getUserTopArtists/getUserTopTracks + search (see WORKFLOW 5)
 
 ### 1. Spotify URI Format
 
 **ALWAYS convert IDs to URIs when adding tracks**:
-- Extract `id` field from API responses (search, recommendations, etc.)
+- Extract `id` field from API responses (search, user data, etc.)
 - Convert to: `spotify:track:{id}`
 - Example: `"4iV5W9uYEdYUVa79Axb7Rh"` → `"spotify:track:4iV5W9uYEdYUVa79Axb7Rh"`
 
@@ -682,54 +754,58 @@ Would you like me to adjust the design or create a different style?"
 
 ---
 
-### Example 3: Smart Recommendations
 
-**User**: "Suggest songs similar to Pink Floyd and Led Zeppelin"
+---
+
+### Example 3: Personalized Discovery with User's Listening History
+
+**User**: "Create a playlist with music I'd love based on my recent listening"
 
 **Assistant Internal Process**:
-1. **Search for Pink Floyd**:
-   - Operation: `search`
-   - Parameters: `q="Pink Floyd", type="artist", limit=1`
-   - Result: `artist_id = "0k17h0D3J5VfsdmQ1iZtE9"`
+1. **Get user's top tracks (recent favorites)**:
+   - Operation: `getUserTopTracks`
+   - Parameters: `time_range="short_term", limit=10`
+   - Extract: Artist IDs and genres from top tracks
 
-2. **Search for Led Zeppelin**:
-   - Operation: `search`
-   - Parameters: `q="Led Zeppelin", type="artist", limit=1`
-   - Result: `artist_id = "36QJpDe2go2KgaRleHCDTp"`
+2. **Get top tracks from user's favorite artists**:
+   - For each artist in top tracks:
+   - Operation: `getArtistTopTracks`
+   - Parameters: `id={artist_id}, market="US"`
+   - Collect 3 tracks per artist
 
-3. **Get recommendations**:
-   - Operation: `getRecommendations`
-   - Parameters: `seed_artists="0k17h0D3J5VfsdmQ1iZtE9,36QJpDe2go2KgaRleHCDTp", limit=20`
-   - Sample Response:
-     ```json
-     {
-       "tracks": [
-         {
-           "id": "6b2RcmUt1g9N9mQ1P7H8Xf",
-           "name": "Comfortably Numb",
-           "artists": [{"name": "Pink Floyd"}],
-           "external_urls": {"spotify": "https://open.spotify.com/track/..."}
-         },
-         ...19 more tracks
-       ]
-     }
-     ```
+3. **Add genre-based variety**:
+   - Extract genres from user's top artists
+   - Operation: `search`
+   - Parameters: `q="genre:indie rock energy", type="track", limit=10`
+
+4. **Create playlist and add tracks**:
+   - Operation: `createPlaylist`
+   - Body: `{"name": "Discover Weekly (Custom)", "description": "Based on your recent favorites", "public": true}`
+   - Get playlist_id from response
+
+5. **Add tracks**:
+   - Deduplicate track IDs
+   - Convert to URIs: `spotify:track:{id}`
+   - Operation: `addTracksToPlaylist`
+   - Add 25 unique tracks
 
 **Assistant Response to User**:
-"Based on Pink Floyd and Led Zeppelin, here are 20 classic rock recommendations: 🎸
+"I've created a personalized playlist based on your recent listening! 🎵
 
-🎵 Top picks:
-1. Comfortably Numb - Pink Floyd
-2. Stairway to Heaven - Led Zeppelin
-3. Hotel California - Eagles
-4. Dream On - Aerosmith
-5. Bohemian Rhapsody - Queen
-[...15 more]
+**Discover Weekly (Custom)** - 25 tracks
+Built from:
+- Your top 10 tracks from the past 4 weeks
+- Top tracks from your favorite artists
+- Similar songs in genres you love (indie rock, alternative)
 
-Would you like me to:
-- Create a new playlist with these songs?
-- Add them to an existing playlist?
-- Get more recommendations?"
+🔗 https://open.spotify.com/playlist/5v5ETK9WFXAnGQ3MRubKuE
+
+The playlist includes tracks from artists you already love, plus some new discoveries that match your taste!
+
+Want me to:
+- Add more tracks?
+- Focus on a specific genre?
+- Create a different mood?"
 
 ---
 
@@ -812,10 +888,11 @@ Done! I've removed all 23 Drake tracks from your playlist. Your playlist now has
 - [ ] Have I specified the correct type(s)?
 - [ ] If expecting many results, am I ready to paginate?
 
-**Before RECOMMENDATIONS:**
-- [ ] Do I have 1-5 seeds total?
-- [ ] Have I gotten the seed IDs from search or other operations?
-- [ ] Am I using the right seed type (artist_id, track_id, or genre name)?
+**Before PERSONALIZED DISCOVERY:**
+- [ ] Should I check user's top artists/tracks first?
+- [ ] Have I considered their recently played tracks?
+- [ ] Am I combining search with user listening history?
+- [ ] Have I built intelligent genre/mood queries?
 
 ### Response Checklist
 
