@@ -71,7 +71,97 @@ Searches:
 → 36 tracks, cohesive mood
 ```
 
-**Advanced Operators:**
+**Advanced Search Filters:**
+
+Spotify search supports powerful filters you should use regularly:
+
+**Field Filters:**
+- `artist:name` - Specific artist
+- `album:name` - Specific album
+- `track:name` - Specific track title
+- `genre:name` - Genre filter (rock, jazz, electronic, etc.)
+- `year:YYYY` or `year:YYYY-YYYY` - Release year or range
+- `tag:new` - Recent releases
+- `tag:hipster` - Less mainstream tracks
+- `isrc:code` - ISRC code
+- `upc:code` - UPC code
+
+**Operators:**
+- `-term` or `NOT term` - Exclude results
+- `term1 OR term2` - Either term
+- `term1 term2` - Both terms (AND is implicit)
+
+**Examples:**
+- `"workout genre:electronic year:2020-2025 -remix"` - Modern electronic workout music, no remixes
+- `"jazz year:1960-1970 -live"` - Studio jazz from the 60s
+- `"artist:Radiohead OR artist:Muse genre:alternative"` - Alternative tracks from either artist
+- `"chill tag:hipster -popular"` - Undiscovered chill music
+
+### Tempo/BPM Filtering (2-Step Process)
+
+Spotify does NOT support direct BPM filtering in search. Use this workflow:
+
+**Step 1: Search with genre/mood keywords**
+```
+Search: "running electronic" (limit=30)
+```
+
+**Step 2: Get audio features and filter in Python**
+```python
+# Get audio features for all tracks (max 100 per request)
+audio_features = getMultipleAudioFeatures(track_ids)
+
+# Filter by tempo/BPM
+filtered_tracks = [
+    track for track, features in zip(tracks, audio_features)
+    if 120 <= features['tempo'] <= 140  # BPM range
+    and features['energy'] > 0.7  # High energy
+    and features['danceability'] > 0.6  # Danceable
+]
+```
+
+**Audio Features Available:**
+- `tempo` - BPM (beats per minute), typically 50-200
+- `energy` - 0.0-1.0 (calm to energetic)
+- `danceability` - 0.0-1.0 (not danceable to very danceable)
+- `valence` - 0.0-1.0 (sad to happy)
+- `acousticness` - 0.0-1.0 (electric to acoustic)
+- `instrumentalness` - 0.0-1.0 (vocal to instrumental)
+- `speechiness` - 0.0-1.0 (music to spoken word)
+- `liveness` - 0.0-1.0 (studio to live recording)
+- `loudness` - dB, typically -60 to 0
+- `key` - 0-11 (C, C#, D, etc.)
+- `mode` - 0 (minor) or 1 (major)
+
+**Real-World Examples:**
+
+*Example 1: "Create a 125-130 BPM running playlist"*
+```
+1. Search: "running electronic energy" (limit=20)
+2. Search: "workout pop upbeat" (limit=20)
+3. Get audio features for all 40 tracks
+4. Filter: 125 <= tempo <= 130 and energy > 0.7
+5. Take 25-30 tracks from filtered results
+6. Add to playlist
+```
+
+*Example 2: "Happy upbeat songs around 140 BPM"*
+```
+1. Search: "happy pop dance" (limit=25)
+2. Search: "upbeat party energy" (limit=25)
+3. Get audio features
+4. Filter: 135 <= tempo <= 145 and valence > 0.7 and energy > 0.6
+5. Add to playlist
+```
+
+*Example 3: "Chill downtempo 90-100 BPM for focus"*
+```
+1. Search: "chill electronic focus" (limit=20)
+2. Search: "downtempo ambient study" (limit=20)
+3. Get audio features
+4. Filter: 90 <= tempo <= 100 and energy < 0.5 and instrumentalness > 0.5
+5. Add to playlist
+```
 
 ### Track Type Preferences
 

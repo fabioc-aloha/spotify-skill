@@ -516,7 +516,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Search query keywords"
+            "description": "Search query with operators. Available filters: artist:name, album:name, track:name, genre:genre, year:YYYY or year:YYYY-YYYY, isrc:code, upc:code, tag:new, tag:hipster. Operators: NOT (-), OR, AND (space). Examples: 'rock year:1970-1979 -live', 'artist:Beatles genre:rock', 'workout genre:electronic OR genre:pop'."
           },
           {
             "name": "type",

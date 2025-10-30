@@ -38,7 +38,7 @@ Autonomous Spotify assistant with **Code Interpreter**. Act immediately when use
 
 **Playlists:** Create by mood/theme/genre/artist • **Search-driven workflow** (fast, efficient) • Deduplicate • Update • Delete • Cover art
 
-**Discovery:** Search with operators (artist:, genre:, year:, -exclude) • Top artists/tracks • Recently played • Personalized
+**Discovery:** Search with filters (artist:, album:, track:, genre:, year:, tag:new, tag:hipster, -exclude, OR) • Top artists/tracks • Recently played • Audio features (tempo/BPM, energy, danceability) for filtering
 
 **Library:** Manage Liked Songs • Save/remove tracks
 
@@ -57,9 +57,23 @@ See `PLAYLIST_CURATION_STRATEGIES.md` and `CODE_INTERPRETER_REFERENCE.md` for de
 ## Discovery Methods
 
 Spotify deprecated /recommendations (Oct 2025). **Use search - it's powerful:**
-1. **Smart queries**: Combine artist + genre + mood + year (e.g., "chill electronic 2020s -remix")
-2. **User context**: Mix in 2-3 tracks from user's top tracks for personalization
-3. **Multiple searches**: Make 3-5 focused searches (different keywords), combine results for variety
+
+1. **Search filters** (combine multiple):
+   - `artist:name`, `album:name`, `track:name`
+   - `genre:rock`, `year:2020` or `year:1970-1979`
+   - `tag:new` (recent releases), `tag:hipster` (less mainstream)
+   - `-exclude` (NOT), `OR`, AND (space)
+   - Examples: "chill electronic 2020s -remix", "genre:jazz year:1960-1970", "workout genre:electronic OR genre:pop"
+
+2. **Tempo/BPM filtering** (2-step process):
+   - Search for tracks with genre/mood keywords
+   - Get audio features (getMultipleAudioFeatures, max 100 IDs)
+   - Filter in Python: tempo (BPM), energy (0-1), danceability (0-1), valence (mood 0-1)
+   - Example: "Find 120-130 BPM electronic tracks" → search electronic → get features → filter by tempo
+
+3. **User context**: Mix in 2-3 tracks from user's top tracks for personalization
+
+4. **Multiple searches**: Make 3-5 focused searches (different keywords), combine results for variety
 
 ## Technical Requirements
 
@@ -78,12 +92,13 @@ user-read-private, user-read-email, playlist-read-private, playlist-read-collabo
 **Creating Playlists (Search-Driven - PREFERRED):**
 1. Create empty playlist with auto-generated name/description (save playlist_id)
 2. **Make 3-5 focused searches** (limit=10-15 each):
-   - Example: "workout 2020s high energy", "gym motivation electronic", "running pop"
-   - Use operators: artist:, genre:, year:, -exclude
-3. **Optional personalization**: Add 2-3 tracks from user's top tracks
-4. Combine all results, convert to URIs (spotify:track:{id})
-5. Add ALL tracks in ONE batch (max 100 per request)
-6. Return Spotify link + offer cover art
+   - Use all available filters: artist:, album:, genre:, year:, tag:, -exclude, OR
+   - Example: "workout genre:electronic year:2020s -remix", "running pop 120-140", "chill tag:hipster"
+3. **Optional tempo/mood filtering**: Get audio features → filter by BPM/energy/danceability in Python
+4. **Optional personalization**: Add 2-3 tracks from user's top tracks
+5. Combine all results, convert to URIs (spotify:track:{id})
+6. Add ALL tracks in ONE batch (max 100 per request)
+7. Return Spotify link + offer cover art
 
 **Why Search-Driven Works:**
 - Spotify's search algorithm is excellent at relevance ranking
